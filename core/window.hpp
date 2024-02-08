@@ -7,6 +7,11 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include "misc/cpp/imgui_stdlib.h"
+
 #include <glm/glm.hpp>
 
 struct window_t
@@ -14,6 +19,7 @@ struct window_t
 	GLFWwindow* handle;
 
 	glm::ivec2 dimensions;
+	ImGuiWindowFlags imgui_flags;
 
 	std::string title_str;
 	std::string renderer_str;
@@ -59,8 +65,27 @@ void window_init(window_t& window, std::string name, glm::ivec2 dimensions)
 	strcpy(renderer_cstr, (const char*) renderer_glstr);
 	strcpy(version_cstr, (const char*) version_glstr);
 
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void) io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    ImGui::StyleColorsDark();
+
+	ImGuiWindowFlags imgui_flags =
+	ImGuiWindowFlags_NoSavedSettings |
+	ImGuiWindowFlags_NoMove |
+	ImGuiWindowFlags_NoResize |
+	ImGuiWindowFlags_NoSavedSettings |
+	ImGuiWindowFlags_NoCollapse |
+	ImGuiWindowFlags_NoTitleBar |
+	ImGuiWindowFlags_NoBackground;
+	
+	ImGui_ImplGlfw_InitForOpenGL(handle, true);
+	ImGui_ImplOpenGL3_Init("#version 150");
+
 	window.handle = handle;
 	window.dimensions = dimensions;
+	window.imgui_flags = imgui_flags;
 	window.title_str = name;
   	window.renderer_str = std::string(renderer_cstr);
   	window.version_str = std::string(version_cstr);
@@ -68,6 +93,10 @@ void window_init(window_t& window, std::string name, glm::ivec2 dimensions)
 
 void window_dispose(window_t& window)
 {
+	ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
 	glfwDestroyWindow(window.handle);
   	glfwTerminate();
 }

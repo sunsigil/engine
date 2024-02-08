@@ -1,0 +1,10 @@
+c++
+`pkg-config --cflags glew`
+`pkg-config --cflags glfw3`
+`pkg-config --cflags glm`
+-I/usr/local/include
+-I/opt/homebrew/include
+-Igui
+-Igui/im
+-Igui/im/misc/cpp
+-Igui/im/backends
