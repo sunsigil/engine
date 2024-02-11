@@ -54,6 +54,11 @@
 #define SIGNIFICANT_COLOURS_OFFSET 50
 #define SIGNIFICANT_COLOURS_SIZE 4
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef struct
 {
 	uint8_t r;
@@ -91,5 +96,9 @@ int BMP_set_pixel(BMP_t* bmp, uint32_t x, uint32_t y, colour_t c);
 colour_t BMP_get_pixel(BMP_t* bmp, uint32_t x, uint32_t y);
 int BMP_write(BMP_t* bmp, char* path);
 void BMP_dispose(BMP_t* bmp);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

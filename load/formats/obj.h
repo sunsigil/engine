@@ -10,6 +10,11 @@
 #define OBJ_F_POINT_COUNT 3
 #define OBJ_F_STRIDE 9
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef struct OBJ
 {
 	int v_count;
@@ -30,5 +35,9 @@ typedef struct OBJ
 
 void OBJ_init(OBJ_t* obj, const char* path);
 void OBJ_dispose(OBJ_t* obj);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

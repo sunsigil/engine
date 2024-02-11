@@ -6,7 +6,6 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_access.hpp>
-#include <glm/gtx/string_cast.hpp>
 
 struct vertex_t
 {
@@ -24,7 +23,7 @@ struct mesh_t
 	GLenum mode;
 };
 
-mesh_t mesh_init(vertex_t* verts, int vert_count, GLenum mode)
+void mesh_init(mesh_t* mesh, vertex_t* verts, int vert_count, GLenum mode)
 {
 	GLuint vao_id;
 	glGenVertexArrays(1, &vao_id);
@@ -45,20 +44,18 @@ mesh_t mesh_init(vertex_t* verts, int vert_count, GLenum mode)
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	mesh_t mesh;
-	mesh.vao_id = vao_id;
-	mesh.vbo_id = vbo_id;
-	mesh.verts = verts;
-	mesh.mode = mode;
-
-	return mesh;
+	mesh->vao_id = vao_id;
+	mesh->vbo_id = vbo_id;
+	mesh->verts = verts;
+	mesh->vert_count = vert_count;
+	mesh->mode = mode;
 }
 
-void mesh_dispose(const mesh_t& mesh)
+void mesh_dispose(const mesh_t* mesh)
 {
-	if(mesh.vert_count == 0)
+	if(mesh->vert_count == 0)
 	{ return; }
 
-	glDeleteVertexArrays(1, &mesh.vao_id);
-	glDeleteBuffers(1, &mesh.vbo_id);
+	glDeleteVertexArrays(1, &mesh->vao_id);
+	glDeleteBuffers(1, &mesh->vbo_id);
 }

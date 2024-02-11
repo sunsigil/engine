@@ -1,4 +1,4 @@
-#include "bmp_mapped.h"
+#include "bmpm.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

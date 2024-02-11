@@ -7,10 +7,10 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-#include "misc/cpp/imgui_stdlib.h"
+#include "imgui/imgui.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_opengl3.h"
+#include "imgui/misc/cpp/imgui_stdlib.h"
 
 #include <glm/glm.hpp>
 
@@ -24,12 +24,14 @@ struct window_t
 	std::string title_str;
 	std::string renderer_str;
 	std::string version_str;
+	std::string glsl_str;
 
 	glm::vec2 mouse_pos;
 };
 
 void window_init(window_t& window, std::string name, glm::ivec2 dimensions)
 {
+	std::cerr << "[window_init] initializing GLFW" << std::endl;
 	if(!glfwInit()) 
 	{
 		std::cerr << "[window_init] failed to initialize GLFW!" << std::endl;
@@ -41,30 +43,36 @@ void window_init(window_t& window, std::string name, glm::ivec2 dimensions)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   
+	std::cerr << "[window_init] creating window" << std::endl;
 	GLFWwindow* handle = glfwCreateWindow(dimensions.x, dimensions.y, name.c_str(), NULL, NULL);
 	if(!handle) 
 	{
-		std::cerr << "[window_init] failed to open GLFW window!" << std::endl;
+		std::cerr << "[window_init] error: failed to create window" << std::endl;
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
   	glfwMakeContextCurrent(handle);
 								  
+	std::cerr << "[window_init] initializing GLEW" << std::endl;
   	glewExperimental = GL_TRUE;
   	if(glewInit() != GLEW_OK)
 	{
-		std:: cerr << "[window_init] failed to initialize GLEW!" << std::endl;
+		std:: cerr << "[window_init] error failed to initialize GLEW" << std::endl;
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
 
 	const GLubyte* renderer_glstr = glGetString(GL_RENDERER);
 	const GLubyte* version_glstr = glGetString(GL_VERSION);
+	const GLubyte* glsl_glstr = glGetString(GL_SHADING_LANGUAGE_VERSION);
 	char renderer_cstr[512];
 	char version_cstr[512];
+	char glsl_cstr[512]; 
 	strcpy(renderer_cstr, (const char*) renderer_glstr);
 	strcpy(version_cstr, (const char*) version_glstr);
+	strcpy(glsl_cstr, (const char*) glsl_glstr);
 
+	std::cerr << "[window_init] creating IMGUI context" << std::endl;
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void) io;
@@ -80,6 +88,7 @@ void window_init(window_t& window, std::string name, glm::ivec2 dimensions)
 	ImGuiWindowFlags_NoTitleBar |
 	ImGuiWindowFlags_NoBackground;
 	
+	std::cerr << "[window_init] initializing IMGUI" << std::endl;
 	ImGui_ImplGlfw_InitForOpenGL(handle, true);
 	ImGui_ImplOpenGL3_Init("#version 150");
 
@@ -89,6 +98,7 @@ void window_init(window_t& window, std::string name, glm::ivec2 dimensions)
 	window.title_str = name;
   	window.renderer_str = std::string(renderer_cstr);
   	window.version_str = std::string(version_cstr);
+	window.glsl_str = std::string(glsl_cstr);
 }
 
 void window_dispose(window_t& window)

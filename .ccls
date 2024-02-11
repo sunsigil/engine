@@ -4,7 +4,8 @@ c++
 `pkg-config --cflags glm`
 -I/usr/local/include
 -I/opt/homebrew/include
+-Iload
 -Igui
--Igui/im
--Igui/im/misc/cpp
--Igui/im/backends
+-Irender
+-Imath
+-I core

@@ -3,6 +3,11 @@
 
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef enum JSON_head
 {
 	JSON_STRING,
@@ -61,5 +66,9 @@ JSON_head_t* JSON_read(const char* path);
 void JSON_write(JSON_head_t* json, const char* path);
 void JSON_print(JSON_head_t* json);
 void JSON_dispose(JSON_head_t* json);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

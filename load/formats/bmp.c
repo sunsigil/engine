@@ -166,7 +166,7 @@ BMP_t BMP_read(char* path)
 	}	
 	if(!(depth == 24 || depth == 32))
 	{
-		puts("[BMP_read] Colours are neither RGB nor RGBA");
+		puts("[BMP_read] Colours are neither 24-bit RGB nor 32-bit RGBA");
 		free(bytes);
 		exit(EXIT_FAILURE);
 	}
