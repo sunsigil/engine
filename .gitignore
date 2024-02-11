@@ -3,13 +3,13 @@
 *.o
 *.dSYM/
 *.ccls
-**/.ccls-cache/
+*.ccls-cache/
 
 *.bmp
 *.obj
 *.json
 *.ini
 
-**/makefile
-**/bin/
+*makefile
+*bin/
 
