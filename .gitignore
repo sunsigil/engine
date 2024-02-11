@@ -2,6 +2,7 @@
 *.swp
 *.o
 *.dSYM/
+*.ccls
 **/.ccls-cache/
 
 *.bmp
