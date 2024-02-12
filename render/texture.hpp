@@ -17,7 +17,7 @@ struct texture_t
 	GLenum channels;
 };
 
-void texture_init(texture_t* texture, GLubyte* data, int width, int height, GLenum channels)
+void texture_init(texture_t& texture, GLubyte* data, int width, int height, GLenum channels)
 {
 	GLuint tex_id; 
 	glGenTextures(1, &tex_id);
@@ -29,17 +29,17 @@ void texture_init(texture_t* texture, GLubyte* data, int width, int height, GLen
 	glTexImage2D(GL_TEXTURE_2D, 0, channels, width, height, 0, channels, GL_UNSIGNED_BYTE, data);
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-	texture->width = width;
-	texture->height = height;
-	texture->tex_id = tex_id;
-	texture->data = data;
-	texture->mode = GL_TEXTURE_2D;
-	texture->channels = channels;
+	texture.width = width;
+	texture.height = height;
+	texture.tex_id = tex_id;
+	texture.data = data;
+	texture.mode = GL_TEXTURE_2D;
+	texture.channels = channels;
 }
 
-void texture_dispose(const texture_t* texture)
+void texture_dispose(texture_t& texture)
 {
-	glDeleteTextures(1, &texture->tex_id);
-	free(texture->data);
+	glDeleteTextures(1, &texture.tex_id);
+	free(texture.data);
 }
 

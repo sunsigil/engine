@@ -55,17 +55,15 @@ typedef struct JSON_array
 	JSON_head_t** values;
 } JSON_array_t;
 
-JSON_head_t* JSON_parse_string(char** text);
-JSON_head_t* JSON_parse_num(char** text);
-JSON_head_t* JSON_parse_object(char** text);
-JSON_head_t* JSON_parse_array(char** text);
-JSON_head_t* JSON_parse_null(char** text);
-JSON_head_t* JSON_parse_value(char** text);
-
+JSON_head_t* JSON_init(char* text); 
 JSON_head_t* JSON_read(const char* path);
+void JSON_dispose(JSON_head_t* json);
+
 void JSON_write(JSON_head_t* json, const char* path);
 void JSON_print(JSON_head_t* json);
-void JSON_dispose(JSON_head_t* json);
+
+JSON_head_t* JSON_object_get(JSON_head_t* json, const char* name);
+JSON_head_t* JSON_array_get(JSON_head_t* json, int index);
 
 #ifdef __cplusplus
 }

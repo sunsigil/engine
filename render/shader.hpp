@@ -13,7 +13,7 @@ struct shader_t
 	GLuint prog_id;
 };
 
-void shader_init(shader_t* shader, char* vert_src, char* frag_src)
+void shader_init(shader_t& shader, char* vert_src, char* frag_src)
 {
 	int shader_status;
 	char shader_log[512];
@@ -22,7 +22,6 @@ void shader_init(shader_t* shader, char* vert_src, char* frag_src)
 	unsigned int vert_id = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vert_id, 1, &vert_src, NULL);
 	glCompileShader(vert_id);
-	free(vert_src);
 	
 	glGetShaderiv(vert_id, GL_COMPILE_STATUS, &shader_status);
 	if(!shader_status)
@@ -36,7 +35,6 @@ void shader_init(shader_t* shader, char* vert_src, char* frag_src)
 	unsigned int frag_id = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(frag_id, 1, &frag_src, NULL);
 	glCompileShader(frag_id);
-	free(frag_src);
 
 	glGetShaderiv(frag_id, GL_COMPILE_STATUS, &shader_status);
 	if(!shader_status)
@@ -60,15 +58,15 @@ void shader_init(shader_t* shader, char* vert_src, char* frag_src)
 		std::cerr << shader_log << std::endl;
 	}
 
-	shader->vert_id = vert_id;
-	shader->frag_id = frag_id;
-	shader->prog_id = prog_id;
+	shader.vert_id = vert_id;
+	shader.frag_id = frag_id;
+	shader.prog_id = prog_id;
 }
 
-void shader_dispose(const shader_t* shader)
+void shader_dispose(shader_t& shader)
 {
-	glDeleteShader(shader->frag_id);
-	glDeleteShader(shader->vert_id);
+	glDeleteShader(shader.frag_id);
+	glDeleteShader(shader.vert_id);
 }
 
 

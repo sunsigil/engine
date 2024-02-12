@@ -6,6 +6,8 @@
 #include "transform.hpp"
 #include "camera.hpp"
 #include "renderer.hpp"
+#include "scene.hpp"
+#include "roster.hpp"
 
 int main(int argc, char** argv)
 {
@@ -13,19 +15,16 @@ int main(int argc, char** argv)
 	window_init(window, "Engine", glm::vec2(1280, 720));
 
 	bank_t bank;
-	bank_init(&bank, "assets");
+	bank_init(bank, "assets");
+	std::map<std::string, scene_t> roster;
+	roster_init(roster, "assets", bank);
+
+	scene_t scene = roster["playground"];	
 
 	camera_t camera;
 	camera_init(camera, 1, window.dimensions.x / (float) window.dimensions.y, 0.1f, 1000.0f);
 	transform_t camera_transform;
 	transform_init(camera_transform, glm::vec3(1), glm::quat(glm::vec3(0)), glm::vec3(0));
-
-	renderer_t renderer;
-	renderer.mesh = bank.meshes["cube"];
-	renderer.shader = bank.shaders["standard"];
-	renderer.texture = bank.textures["uv"];
-	transform_t renderer_transform;
-	transform_init(renderer_transform, glm::vec3(1), glm::quat(glm::vec3(0)), glm::vec3(0,0,2));
 
 	gui_state_t gui_state;
 	gui_state.window = &window;
@@ -66,11 +65,15 @@ int main(int argc, char** argv)
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		render(renderer, make_model(renderer_transform), make_view(camera, camera_transform.position, camera_transform.orientation), camera.proj);
+		for(int i = 0; i < scene.size; i++)
+		{
+			transform_t transform = scene.transforms[i];
+			renderer_t renderer = scene.renderers[i];
+			render(renderer, make_model(transform), make_view(camera, camera_transform.position, camera_transform.orientation), camera.proj);
+		}
 
 		gui_begin(gui_state);
 		gui_draw_window_info(gui_state, 1.0f/dt);
-		gui_draw_transform(gui_state, renderer_transform);
 		gui_end();
 		
 		glfwSwapBuffers(window.handle);

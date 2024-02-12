@@ -28,3 +28,8 @@ void TXT_init(TXT_t* txt, const char* path)
 	txt->file_size = file_size;
 	txt->text = text;
 }
+
+void TXT_dispose(TXT_t* txt)
+{
+	free(txt->text);
+}

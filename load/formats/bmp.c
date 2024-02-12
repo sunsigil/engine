@@ -60,7 +60,7 @@ void write_bgra(uint8_t* location, colour_t value)
 	location[3] = value.a;
 }
 
-BMP_t BMP_create(uint32_t width, uint32_t height, int has_alpha)
+void BMP_spawn(BMP_t* bmp, uint32_t width, uint32_t height, int has_alpha)
 {
 	uint16_t signature = 0x4D42;
 	// uint32_t reserved = 0;
@@ -82,46 +82,43 @@ BMP_t BMP_create(uint32_t width, uint32_t height, int has_alpha)
 	// uint32_t colours = has_alpha ? 0xFFFFFFFF : 0xFFFFFF ;
 	// uint_t significant_colours = 0;	
 
-	BMP_t bmp = {};
-	bmp.file_size = file_size;
-	bmp.width = width;
-	bmp.height = height;
-	bmp.depth = depth;
+	bmp->file_size = file_size;
+	bmp->width = width;
+	bmp->height = height;
+	bmp->depth = depth;
 
-	bmp.file_content = calloc(file_size, 1);
-	if(bmp.file_content == NULL)
+	bmp->file_content = calloc(file_size, 1);
+	if(bmp->file_content == NULL)
 	{
 		perror("[BMP_create] calloc");
 		exit(EXIT_FAILURE);
 	}	
-	bmp.pixels = calloc(width * height, sizeof(colour_t));
-	if(bmp.pixels == NULL)
+	bmp->pixels = calloc(width * height, sizeof(colour_t));
+	if(bmp->pixels == NULL)
 	{
 		perror("[BMP_create] calloc");
 		exit(EXIT_FAILURE);
 	}	
-	bmp.array = bmp.file_content + array_offset;
+	bmp->array = bmp->file_content + array_offset;
 	
-	write_2(bmp.file_content+SIGNATURE_OFFSET, signature);
-	write_4(bmp.file_content+FILE_SIZE_OFFSET, file_size);
-	// write_4(bmp.file_content+RESERVED_OFFSET, reserved);
-	write_4(bmp.file_content+ARRAY_OFFSET_OFFSET, array_offset);
-	write_4(bmp.file_content+INFO_HEADER_SIZE_OFFSET, info_header_size);
-	write_4(bmp.file_content+WIDTH_OFFSET, width);
-	write_4(bmp.file_content+HEIGHT_OFFSET, height);
-	write_2(bmp.file_content+PLANES_OFFSET, planes);
-	write_2(bmp.file_content+DEPTH_OFFSET, depth);
-	// write_4(bmp.file_content+COMPRESSION_OFFSET, compression);
-	// write_4(bmp.file_content+COMPRESSED_SIZE_OFFSET, compressed_size);
-	// write_4(bmp.file_content+X_PPM_OFFSET, x_ppm);
-	// write_4(bmp.file_content+Y_PPM_OFFSET, y_ppm);
-	// write_4(bmp.file_content+COLOURS_OFFSET, colours);
-	// write_4(bmp.file_content+SIGNIFICANT_COLOURS_OFFSET, significant_colours);	
-
-	return bmp;
+	write_2(bmp->file_content+SIGNATURE_OFFSET, signature);
+	write_4(bmp->file_content+FILE_SIZE_OFFSET, file_size);
+	// write_4(bmp->file_content+RESERVED_OFFSET, reserved);
+	write_4(bmp->file_content+ARRAY_OFFSET_OFFSET, array_offset);
+	write_4(bmp->file_content+INFO_HEADER_SIZE_OFFSET, info_header_size);
+	write_4(bmp->file_content+WIDTH_OFFSET, width);
+	write_4(bmp->file_content+HEIGHT_OFFSET, height);
+	write_2(bmp->file_content+PLANES_OFFSET, planes);
+	write_2(bmp->file_content+DEPTH_OFFSET, depth);
+	// write_4(bmp->file_content+COMPRESSION_OFFSET, compression);
+	// write_4(bmp->file_content+COMPRESSED_SIZE_OFFSET, compressed_size);
+	// write_4(bmp->file_content+X_PPM_OFFSET, x_ppm);
+	// write_4(bmp->file_content+Y_PPM_OFFSET, y_ppm);
+	// write_4(bmp->file_content+COLOURS_OFFSET, colours);
+	// write_4(bmp->file_content+SIGNIFICANT_COLOURS_OFFSET, significant_colours);	
 }
 
-BMP_t BMP_read(char* path)
+void BMP_read(BMP_t* bmp, char* path)
 {
 	int fd = open(path, O_RDONLY, S_IRUSR);
 	if(fd == -1)
@@ -196,16 +193,14 @@ BMP_t BMP_read(char* path)
 		}
 	}
 
-	BMP_t bmp = {};
-	bmp.file_size = file_size;
-	bmp.file_content = bytes;
-	bmp.width = width;
-	bmp.height = height;
-	bmp.depth = depth;
-	bmp.array = array;
-	bmp.pixels = pixels;
-
-	return bmp;
+	bmp->file_size = file_size;
+	bmp->file_content = bytes;
+	bmp->width = width;
+	bmp->height = height;
+	bmp->depth = depth;
+	bmp->array_size = file_size-array_offset;
+	bmp->array = array;
+	bmp->pixels = pixels;
 }
 
 void BMP_print_header(BMP_t* bmp)

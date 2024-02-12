@@ -9,6 +9,13 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 
+JSON_head_t* JSON_parse_string(char** text);
+JSON_head_t* JSON_parse_num(char** text);
+JSON_head_t* JSON_parse_object(char** text);
+JSON_head_t* JSON_parse_array(char** text);
+JSON_head_t* JSON_parse_null(char** text);
+JSON_head_t* JSON_parse_value(char** text);
+
 JSON_head_t* JSON_parse_string(char** text)
 {
 	if(**text != '"')
@@ -400,6 +407,42 @@ JSON_head_t* JSON_parse_value(char** text)
 	exit(EXIT_FAILURE);
 }
 
+JSON_head_t* JSON_init(char* text)
+{
+	char* proxy = text;
+	return JSON_parse_value(&proxy);
+}
+
+void JSON_dispose(JSON_head_t* json)
+{
+	if(*json == JSON_OBJECT)
+	{
+		JSON_object_t* json_object = (JSON_object_t*) json;
+		for(int i = 0; i < json_object->length; i++)
+		{
+			JSON_dispose(json_object->keys[i]);
+			JSON_dispose(json_object->values[i]);
+		}
+	}
+	else if(*json == JSON_ARRAY)
+	{
+		JSON_array_t* json_array = (JSON_array_t*) json;
+		for(int i = 0; i < json_array->length; i++)
+		{
+			JSON_dispose(json_array->values[i]);
+		}
+	}
+	else if(*json == JSON_STRING)
+	{
+		JSON_string_t* json_string = (JSON_string_t*) json;
+		free(json_string->value);
+	}
+	else
+	{
+		free(json);
+	}
+}
+
 JSON_head_t* JSON_read(const char* path)
 {
 	int fd = open(path, O_RDONLY);
@@ -516,33 +559,59 @@ void JSON_print(JSON_head_t* json)
 	JSON_write_RE(fileno(stdout), json, 0);
 }
 
-void JSON_dispose(JSON_head_t* json)
+JSON_head_t* JSON_object_get(JSON_head_t* json, const char* name)
 {
-	if(*json == JSON_OBJECT)
+	if(json == NULL)
 	{
-		JSON_object_t* json_object = (JSON_object_t*) json;
-		for(int i = 0; i < json_object->length; i++)
+		fprintf(stderr, "[JSON_object_get] error: encountered null head\n");
+		return NULL;
+	}
+	else if(*json != JSON_OBJECT)
+	{
+		fprintf(stderr, "[JSON_object_get] error: encountered non-object head\n");
+		return NULL;
+	}
+
+	JSON_object_t* json_object = (JSON_object_t*) json;
+	for(int i = 0; i < json_object->length; i++)
+	{
+		char* key = ((JSON_string_t*) json_object->keys[i])->value;
+		if(strcmp(key, name) == 0)
 		{
-			JSON_dispose(json_object->keys[i]);
-			JSON_dispose(json_object->values[i]);
+			return json_object->values[i];
 		}
 	}
-	else if(*json == JSON_ARRAY)
+
+	for(int i = 0; i < json_object->length; i++)
 	{
-		JSON_array_t* json_array = (JSON_array_t*) json;
-		for(int i = 0; i < json_array->length; i++)
+		if(*json_object->values[i] == JSON_OBJECT)
 		{
-			JSON_dispose(json_array->values[i]);
+			return JSON_object_get(json_object->values[i], name);
 		}
 	}
-	else if(*json == JSON_STRING)
-	{
-		JSON_string_t* json_string = (JSON_string_t*) json;
-		free(json_string->value);
-	}
-	else
-	{
-		free(json);
-	}
+
+	return NULL;
 }
 
+JSON_head_t* JSON_array_get(JSON_head_t* json, int index)
+{
+	if(json == NULL)
+	{
+		fprintf(stderr, "[JSON_array_get] error: encountered null head\n");
+		return NULL;
+	}
+	else if(*json != JSON_ARRAY)
+	{
+		fprintf(stderr, "[JSON_array_get] error: encountered non-array head\n");
+		return NULL;
+	}
+
+	JSON_array_t* json_array = (JSON_array_t*) json;
+	if(index < 0 || index >= json_array->length)
+	{
+		fprintf(stderr, "[JSON_array_get] error: index %d is out of bounds for array of length %d\n", index, json_array->length);
+		return NULL;
+	}
+
+	return json_array->values[index];
+}
