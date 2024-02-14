@@ -50,7 +50,7 @@ void set_tex2_uniform(shader_t& shader, std::string name, int n, texture_t value
 	}
 }
 
-void render(renderer_t& renderer, glm::mat4 M, glm::mat4 V, glm::mat4 P)
+void render(renderer_t& renderer, glm::mat4 M, glm::mat4 V, glm::mat4 P, float near, float far)
 {
 	glUseProgram(renderer.shader.prog_id);
 	glBindVertexArray(renderer.mesh.vao_id);
@@ -58,6 +58,9 @@ void render(renderer_t& renderer, glm::mat4 M, glm::mat4 V, glm::mat4 P)
 	set_mat4_uniform(renderer.shader, "M", M);
 	set_mat4_uniform(renderer.shader, "V", V);
 	set_mat4_uniform(renderer.shader, "P", P);
+
+	set_float_uniform(renderer.shader, "near", near);
+	set_float_uniform(renderer.shader, "far", far);
 
 	set_tex2_uniform(renderer.shader, "tex", 0, renderer.texture);
 

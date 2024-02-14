@@ -8,6 +8,7 @@
 #include "renderer.hpp"
 #include "scene.hpp"
 #include "roster.hpp"
+#include "meshprim.hpp"
 
 int main(int argc, char** argv)
 {
@@ -20,9 +21,15 @@ int main(int argc, char** argv)
 	roster_init(roster, "assets", bank);
 
 	scene_t scene = roster["playground"];	
+	
+	mesh_t grid_mesh;
+	mesh_init(grid_mesh, gen_AA_plane(Z, CW).data(), 6, GL_TRIANGLES);
+	renderer_t grid_renderer;
+	grid_renderer.mesh = grid_mesh;
+	grid_renderer.shader = bank.shaders["grid"];
 
-	camera_t camera;
-	camera_init(camera, 1, window.dimensions.x / (float) window.dimensions.y, 0.1f, 1000.0f);
+	camera_t cam;
+	camera_init(cam, 1, window.dimensions.x / (float) window.dimensions.y, 0.1f, 1000.0f);
 	transform_t camera_transform;
 	transform_init(camera_transform, glm::vec3(1), glm::quat(glm::vec3(0)), glm::vec3(0));
 
@@ -65,12 +72,16 @@ int main(int argc, char** argv)
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glm::mat4 V = make_view(cam, camera_transform.position, camera_transform.orientation);
+		glm::mat4 P = cam.proj;
+
 		for(int i = 0; i < scene.size; i++)
 		{
 			transform_t transform = scene.transforms[i];
 			renderer_t renderer = scene.renderers[i];
-			render(renderer, make_model(transform), make_view(camera, camera_transform.position, camera_transform.orientation), camera.proj);
+			render(renderer, make_model(transform), V, P, cam.near, cam.far);
 		}
+		render(grid_renderer, glm::mat4(1), V, P, cam.near, cam.far);
 
 		gui_begin(gui_state);
 		gui_draw_window_info(gui_state, 1.0f/dt);

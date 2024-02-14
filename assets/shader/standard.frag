@@ -17,5 +17,5 @@ void main()
 	float amb = 0.15;
 	float diff = clamp(-dot(i.norm.xyz, vec3(1)), 0, 1);
 
-	o = clr * amb + clr * diff;
+	o = clr; // clr * amb + clr * diff;
 }

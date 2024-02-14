@@ -5,7 +5,7 @@
 #include "transform.hpp"
 #include "renderer.hpp"
 
-#define SCENE_MAX_CAPACITY 65536
+#define SCENE_MAX_CAPACITY 10485076
 
 struct scene_t
 {

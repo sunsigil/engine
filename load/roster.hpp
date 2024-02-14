@@ -21,7 +21,7 @@ void scene_JSON_init(scene_t& scene, JSON_head_t* json, bank_t& bank)
 		return;
 	}
 
-	scene_init(scene, 1000);
+	scene_init(scene, props->length+10000);
 
 	for(int i = 0; i < props->length; i++)
 	{
