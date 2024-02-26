@@ -92,11 +92,11 @@ void write_bgr(uint8_t* location, colour_t value);
 void write_bgra(uint8_t* location, colour_t value);
 
 void BMP_spawn(BMP_t* bmp, uint32_t width, uint32_t height, int has_alpha);
-void BMP_read(BMP_t* bmp, char* path);
+void BMP_read(BMP_t* bmp, const char* path);
 void BMP_print_header(BMP_t* bmp);
 int BMP_set_pixel(BMP_t* bmp, uint32_t x, uint32_t y, colour_t c);
 colour_t BMP_get_pixel(BMP_t* bmp, uint32_t x, uint32_t y);
-int BMP_write(BMP_t* bmp, char* path);
+int BMP_write(BMP_t* bmp, const char* path);
 void BMP_dispose(BMP_t* bmp);
 
 #ifdef __cplusplus

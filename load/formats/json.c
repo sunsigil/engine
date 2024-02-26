@@ -46,7 +46,7 @@ JSON_head_t* JSON_parse_string(char** text)
 		}
 		else
 		{
-			 length++;
+			 length += 1;
 		}
 
 		*text += 1;

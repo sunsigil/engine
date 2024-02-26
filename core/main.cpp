@@ -7,26 +7,24 @@
 #include "camera.hpp"
 #include "renderer.hpp"
 #include "scene.hpp"
-#include "roster.hpp"
 #include "meshprim.hpp"
 
 int main(int argc, char** argv)
 {
 	window_t window;
 	window_init(window, "Engine", glm::vec2(1280, 720));
+	glfwSetInputMode(window.handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	bank_t bank;
 	bank_init(bank, "assets");
-	std::map<std::string, scene_t> roster;
-	roster_init(roster, "assets", bank);
 
-	scene_t scene = roster["playground"];	
+	scene_t scene = bank.scenes["playground"];	
 	
 	mesh_t grid_mesh;
 	mesh_init(grid_mesh, gen_AA_plane(Z, CW).data(), 6, GL_TRIANGLES);
 	renderer_t grid_renderer;
-	grid_renderer.mesh = grid_mesh;
-	grid_renderer.shader = bank.shaders["grid"];
+	grid_renderer.mesh = &grid_mesh;
+	grid_renderer.shader = &bank.shaders["grid"];
 
 	camera_t cam;
 	camera_init(cam, 1, window.dimensions.x / (float) window.dimensions.y, 0.1f, 1000.0f);

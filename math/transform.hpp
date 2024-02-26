@@ -13,13 +13,21 @@ struct transform_t
 	glm::vec3 acceleration;
 };
 
+void transform_init(transform_t& transform)
+{
+	transform.scale = glm::vec3(1);
+	transform.orientation = glm::quat(glm::vec3(0));
+	transform.position = glm::vec3(0);
+	transform.velocity = glm::vec3(0);
+	transform.acceleration = glm::vec3(0);
+}
+
 void transform_init(transform_t& transform, glm::vec3 scale, glm::quat orientation, glm::vec3 position)
 {
+	transform_init(transform);
 	transform.scale = scale;
 	transform.orientation = orientation;
 	transform.position = position;
-	transform.velocity = glm::vec3(0);
-	transform.acceleration = glm::vec3(0);
 }
 
 glm::mat4 make_model(transform_t& transform)

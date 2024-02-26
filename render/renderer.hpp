@@ -10,50 +10,57 @@
 #include "mesh.hpp"
 #include "shader.hpp"
 #include "texture.hpp"
+#include "material.hpp"
 
 struct renderer_t
 {
-	mesh_t mesh;
-	shader_t shader;
-	texture_t texture;
+	mesh_t* mesh;
+	shader_t* shader;
+	material_t* material;
 };
 
-void set_float_uniform(shader_t& shader, std::string name, float value)
+void renderer_init(renderer_t& renderer)
 {
-	GLint loc = glGetUniformLocation(shader.prog_id, name.c_str());
-	if(loc != -1)
-	{ glProgramUniform1f(shader.prog_id, loc, value); }
+	renderer.mesh = nullptr;
+	renderer.material = nullptr;
 }
 
-void set_vec4_uniform(shader_t& shader, std::string name, glm::vec4 value)
+void set_float_uniform(shader_t* shader, std::string name, float value)
 {
-	GLint loc = glGetUniformLocation(shader.prog_id, name.c_str());
+	GLint loc = glGetUniformLocation(shader->prog_id, name.c_str());
 	if(loc != -1)
-	{ glProgramUniform4fv(shader.prog_id, loc, 1, glm::value_ptr(value)); }
+	{ glProgramUniform1f(shader->prog_id, loc, value); }
 }
 
-void set_mat4_uniform(shader_t& shader, std::string name, glm::mat4 value)
+void set_vec4_uniform(shader_t* shader, std::string name, glm::vec4 value)
 {
-	GLint loc = glGetUniformLocation(shader.prog_id, name.c_str());
+	GLint loc = glGetUniformLocation(shader->prog_id, name.c_str());
 	if(loc != -1)
-	{ glProgramUniformMatrix4fv(shader.prog_id, loc, 1, GL_FALSE, glm::value_ptr(value)); }
+	{ glProgramUniform4fv(shader->prog_id, loc, 1, glm::value_ptr(value)); }
 }
 
-void set_tex2_uniform(shader_t& shader, std::string name, int n, texture_t value)
+void set_mat4_uniform(shader_t* shader, std::string name, glm::mat4 value)
 {
-	GLint loc = glGetUniformLocation(shader.prog_id, name.c_str());
+	GLint loc = glGetUniformLocation(shader->prog_id, name.c_str());
+	if(loc != -1)
+	{ glProgramUniformMatrix4fv(shader->prog_id, loc, 1, GL_FALSE, glm::value_ptr(value)); }
+}
+
+void set_tex2_uniform(shader_t* shader, std::string name, int n, texture_t* value)
+{
+	GLint loc = glGetUniformLocation(shader->prog_id, name.c_str());
 	if(loc != -1)
 	{
-		glProgramUniform1i(shader.prog_id, loc, n);
+		glProgramUniform1i(shader->prog_id, loc, n);
 		glActiveTexture(GL_TEXTURE0+n);
-		glBindTexture(GL_TEXTURE_2D, value.tex_id);
+		glBindTexture(GL_TEXTURE_2D, value->tex_id);
 	}
 }
 
 void render(renderer_t& renderer, glm::mat4 M, glm::mat4 V, glm::mat4 P, float near, float far)
 {
-	glUseProgram(renderer.shader.prog_id);
-	glBindVertexArray(renderer.mesh.vao_id);
+	glUseProgram(renderer.shader->prog_id);
+	glBindVertexArray(renderer.mesh->vao_id);
 
 	set_mat4_uniform(renderer.shader, "M", M);
 	set_mat4_uniform(renderer.shader, "V", V);
@@ -62,9 +69,9 @@ void render(renderer_t& renderer, glm::mat4 M, glm::mat4 V, glm::mat4 P, float n
 	set_float_uniform(renderer.shader, "near", near);
 	set_float_uniform(renderer.shader, "far", far);
 
-	set_tex2_uniform(renderer.shader, "tex", 0, renderer.texture);
+	set_tex2_uniform(renderer.shader, "map_Kd", 1, renderer.material->map_Kd);
 
-	glDrawArrays(renderer.mesh.mode, 0, renderer.mesh.vert_count);
+	glDrawArrays(renderer.mesh->mode, 0, renderer.mesh->vert_count);
 	glBindVertexArray(0);
 	glUseProgram(0);
 }

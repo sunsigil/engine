@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-BMP_t BMPM_map(char* path)
+BMP_t BMPM_map(const char* path)
 {
 	int fd = open(path, O_RDONLY, S_IRUSR);
 	if(fd == -1)

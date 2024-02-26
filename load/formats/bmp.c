@@ -118,7 +118,7 @@ void BMP_spawn(BMP_t* bmp, uint32_t width, uint32_t height, int has_alpha)
 	// write_4(bmp->file_content+SIGNIFICANT_COLOURS_OFFSET, significant_colours);	
 }
 
-void BMP_read(BMP_t* bmp, char* path)
+void BMP_read(BMP_t* bmp, const char* path)
 {
 	int fd = open(path, O_RDONLY, S_IRUSR);
 	if(fd == -1)
@@ -265,7 +265,7 @@ colour_t BMP_get_pixel(BMP_t* bmp, uint32_t x, uint32_t y)
 	return *(bmp->pixels+pixel_index);
 }
 
-int BMP_write(BMP_t* bmp, char* path)
+int BMP_write(BMP_t* bmp, const char* path)
 {
 	int fd = open(path, O_CREAT | O_WRONLY, S_IWUSR | S_IRUSR);	
 	if(fd == -1)

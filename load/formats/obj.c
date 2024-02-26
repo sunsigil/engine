@@ -20,7 +20,7 @@ void OBJ_init(OBJ_t* obj, const char* path)
 	int fd = open(path, O_RDONLY, S_IRUSR);
 	if(fd == -1)
 	{
-		perror("[OBJ_read] open");
+		perror("[OBJ_init] open");
 		exit(EXIT_FAILURE);
 	}
 	size_t file_size = lseek(fd, 0, SEEK_END);
@@ -28,7 +28,7 @@ void OBJ_init(OBJ_t* obj, const char* path)
 	uint8_t* file_content = mmap(NULL, file_size, PROT_READ, MAP_PRIVATE, fd, SEEK_SET);
 	if(file_content == NULL)
 	{
-		perror("[OBJ_read] mmap");
+		perror("[OBJ_init] mmap");
 		exit(EXIT_FAILURE);
 	}
 	close(fd);
