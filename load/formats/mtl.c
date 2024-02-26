@@ -10,12 +10,7 @@
 
 int MTL_match_token(char* read_head, const char* token)
 {
-	if(memcmp(read_head, token, strlen(token)) == 0)
-	{
-		fprintf(stderr, "%s\n", token);
-		return 1;
-	}
-	return 0;
+	return memcmp(read_head, token, strlen(token)) == 0;
 }
 
 void MTL_next_line(char** read_head)
@@ -129,14 +124,20 @@ void MTL_init(MTL_t* mtl, const char* path)
 	}
 }
 
+void MTL_free(void* ptr)
+{
+	if(ptr != NULL)
+		free(ptr);
+}
+
 void MTL_dispose(MTL_t* mtl)
 {
-	free(mtl->name);
-	free(mtl->Ka);
-	free(mtl->Kd);
-	free(mtl->Ks);
-	free(mtl->map_Ka);
-	free(mtl->map_Kd);
-	free(mtl->map_Ks);
-	free(mtl->map_d);
+	MTL_free(mtl->name);
+	MTL_free(mtl->Ka);
+	MTL_free(mtl->Kd);
+	MTL_free(mtl->Ks);
+	MTL_free(mtl->map_Ka);
+	MTL_free(mtl->map_Kd);
+	MTL_free(mtl->map_Ks);
+	MTL_free(mtl->map_d);
 }

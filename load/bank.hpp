@@ -95,16 +95,23 @@ void shader_TXT_init(shader_t& shader, TXT_t& vert_txt, TXT_t& frag_txt)
 void material_MTL_init(material_t& material, MTL_t& mtl, bank_t& bank)
 {
 	material_init(material);
-	material.Ka = glm::vec3(mtl.Ka[0], mtl.Ka[1], mtl.Ka[2]);
-	material.Kd = glm::vec3(mtl.Kd[0], mtl.Kd[1], mtl.Kd[2]);
-	material.Ks = glm::vec3(mtl.Ks[0], mtl.Ks[1], mtl.Ks[2]);
+	if(mtl.Ka != NULL)
+		material.Ka = glm::vec3(mtl.Ka[0], mtl.Ka[1], mtl.Ka[2]);
+	if(mtl.Kd != NULL)
+		material.Kd = glm::vec3(mtl.Kd[0], mtl.Kd[1], mtl.Kd[2]);
+	if(mtl.Ks != NULL)
+		material.Ks = glm::vec3(mtl.Ks[0], mtl.Ks[1], mtl.Ks[2]);
 	material.d = mtl.d;
 	material.halo = mtl.halo;
 	material.Ns = mtl.Ns;
-	material.map_Ka = &bank.textures[mtl.map_Ka];
-	material.map_Kd = &bank.textures[mtl.map_Kd];
-	material.map_Ks = &bank.textures[mtl.map_Ks];
-	material.map_d = &bank.textures[mtl.map_d];
+	if(mtl.map_Ka != NULL)
+		material.map_Ka = &bank.textures[mtl.map_Ka];
+	if(mtl.map_Kd != NULL)
+		material.map_Kd = &bank.textures[mtl.map_Kd];
+	if(mtl.map_Ks != NULL)
+		material.map_Ks = &bank.textures[mtl.map_Ks];
+	if(mtl.map_d != NULL)
+		material.map_d = &bank.textures[mtl.map_d];
 }
 
 void transform_JSON_init(transform_t& transform, JSON_head_t* json)
@@ -164,6 +171,9 @@ void scene_JSON_init(scene_t& scene, JSON_head_t* json, bank_t& bank)
 	{
 		JSON_head_t* prop = JSON_array_get(props, i);
 
+		JSON_head_t* name_json = JSON_object_get(prop, "name");
+		std::string name = std::string(((JSON_string_t*) name_json)->value);
+
 		JSON_head_t* transform_json = JSON_object_get(prop, "transform");
 		transform_t transform;
 		transform_JSON_init(transform, transform_json);
@@ -172,7 +182,7 @@ void scene_JSON_init(scene_t& scene, JSON_head_t* json, bank_t& bank)
 		renderer_t renderer;
 		renderer_JSON_init(renderer, renderer_json, bank);
 
-		scene_add(scene, transform, renderer);
+		scene_add(scene, name, transform, renderer);
 	}
 }
 

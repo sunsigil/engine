@@ -1,6 +1,7 @@
 {
 	"props" : [
 		{
+			"name" : "cube",
 			"transform" : {
 				"scale" : [10.0, 10.0, 10.0],
 				"orientation" : [0.0, 0.0, 0.0],

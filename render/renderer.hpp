@@ -22,6 +22,7 @@ struct renderer_t
 void renderer_init(renderer_t& renderer)
 {
 	renderer.mesh = nullptr;
+	renderer.shader = nullptr;
 	renderer.material = nullptr;
 }
 
@@ -48,13 +49,16 @@ void set_mat4_uniform(shader_t* shader, std::string name, glm::mat4 value)
 
 void set_tex2_uniform(shader_t* shader, std::string name, int n, texture_t* value)
 {
+	if(value == nullptr)
+		return;
+
 	GLint loc = glGetUniformLocation(shader->prog_id, name.c_str());
-	if(loc != -1)
-	{
-		glProgramUniform1i(shader->prog_id, loc, n);
-		glActiveTexture(GL_TEXTURE0+n);
-		glBindTexture(GL_TEXTURE_2D, value->tex_id);
-	}
+	if(loc == -1)
+		return;
+
+	glProgramUniform1i(shader->prog_id, loc, n);
+	glActiveTexture(GL_TEXTURE0+n);
+	glBindTexture(GL_TEXTURE_2D, value->tex_id);
 }
 
 void render(renderer_t& renderer, glm::mat4 M, glm::mat4 V, glm::mat4 P, float near, float far)

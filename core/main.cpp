@@ -22,9 +22,13 @@ int main(int argc, char** argv)
 	
 	mesh_t grid_mesh;
 	mesh_init(grid_mesh, gen_AA_plane(Z, CW).data(), 6, GL_TRIANGLES);
+	material_t grid_material;
+	material_init(grid_material);
 	renderer_t grid_renderer;
+	renderer_init(grid_renderer);
 	grid_renderer.mesh = &grid_mesh;
 	grid_renderer.shader = &bank.shaders["grid"];
+	grid_renderer.material = &grid_material;
 
 	camera_t cam;
 	camera_init(cam, 1, window.dimensions.x / (float) window.dimensions.y, 0.1f, 1000.0f);

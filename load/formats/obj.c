@@ -118,7 +118,7 @@ void OBJ_init(OBJ_t* obj, const char* path)
 				{
 					fs[f_idx*OBJ_F_STRIDE+j*OBJ_F_POINT_STRIDE+0] = atoi(ptr);
 					fs[f_idx*OBJ_F_STRIDE+j*OBJ_F_POINT_STRIDE+1] = 0;
-					ptr = strstr(ptr, "//")+2;
+					ptr = strnstr(ptr, "//", lines[i].length)+2;
 					fs[f_idx*OBJ_F_STRIDE+j*OBJ_F_POINT_STRIDE+2] = atoi(ptr);
 				}
 				else
