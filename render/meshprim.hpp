@@ -9,7 +9,7 @@
 #include "geometry.hpp"
 #include "mesh.hpp"
 
-std::vector<vertex_t> gen_AA_plane(axis_t axis, orient_t orient)
+vertex_t* gen_AA_plane(axis_t axis, orient_t orient)
 {
 	glm::vec3 n = axis_normal(axis, orient); 
 	int axis_a = (axis+1)%3;
@@ -39,25 +39,30 @@ std::vector<vertex_t> gen_AA_plane(axis_t axis, orient_t orient)
 		std::swap(tris[4], tris[5]);
 	}
 
-	return tris;
+	vertex_t* mesh = new vertex_t[6];
+	copy(tris.begin(), tris.end(), mesh);
+	return mesh;
 }
 
-std::vector<vertex_t> gen_AA_box()
+vertex_t* gen_AA_box()
 {
-	std::vector<vertex_t> tris(36);
+	vertex_t* mesh = new vertex_t[36];
+	int idx = 0;
 	for(int axis = X; axis <= Z; axis += 1)
 	{
 		for(int orient = CW; orient <= CCW; orient += 1)
 		{
-			std::vector<vertex_t> plane = gen_AA_plane((axis_t) axis, (orient_t) orient);
-			for(int i = 0; i < plane.size(); i++)
+			vertex_t* plane = gen_AA_plane((axis_t) axis, (orient_t) orient);
+			for(int i = 0; i < 6; i++)
 			{
 				plane[i].pos += plane[i].norm;
+				mesh[idx+i] = plane[i];
 			}
-			tris.insert(tris.end(), plane.begin(), plane.end());
+			idx += 6;
+			delete[] plane;
 		}
 	}
 
-	return tris;
+	return mesh;
 }
 

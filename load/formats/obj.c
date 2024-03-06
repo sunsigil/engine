@@ -14,7 +14,6 @@ typedef struct string_cut
 	size_t length;
 } string_cut_t;
 
-
 void OBJ_init(OBJ_t* obj, const char* path)
 {
 	int fd = open(path, O_RDONLY, S_IRUSR);
@@ -164,10 +163,6 @@ void OBJ_init(OBJ_t* obj, const char* path)
 	obj->vt_count = vt_count;
 	obj->vn_count = vn_count;
 	obj->f_count = f_count;
-	obj->vs_size = vs_size;
-	obj->vts_size = vts_size;
-	obj->vns_size = vns_size;
-	obj->fs_size = fs_size;
 	obj->vs = vs;
 	obj->vts = vts;
 	obj->vns = vns;

@@ -14,6 +14,8 @@
 
 #include <glm/glm.hpp>
 
+#include "error.hpp"
+
 struct window_t
 {
 	GLFWwindow* handle;
@@ -26,11 +28,14 @@ struct window_t
 	std::string version_str;
 	std::string glsl_str;
 
+	bool cursor_enabled;
 	glm::vec2 mouse_pos;
 };
 
 void window_init(window_t& window, std::string name, glm::ivec2 dimensions)
 {
+	glfwSetErrorCallback(glfw_error_callback);
+
 	std::cerr << "[window_init] initializing GLFW" << std::endl;
 	if(!glfwInit()) 
 	{
@@ -109,6 +114,14 @@ void window_dispose(window_t& window)
 
 	glfwDestroyWindow(window.handle);
   	glfwTerminate();
+}
+
+bool window_toggle_cursor(window_t& window, bool toggle)
+{
+	bool old_toggle = window.cursor_enabled;
+	glfwSetInputMode(window.handle, GLFW_CURSOR, toggle ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+	window.cursor_enabled = toggle;
+	return old_toggle;
 }
 
 glm::vec2 get_mouse_pos(window_t& window)

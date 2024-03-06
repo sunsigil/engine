@@ -3,12 +3,25 @@
 		{
 			"name" : "cube",
 			"transform" : {
-				"scale" : [10.0, 10.0, 10.0],
+				"scale" : [1.0, 1.0, 1.0],
 				"orientation" : [0.0, 0.0, 0.0],
 				"position" : [0.0, 0.0, 2.0]
 			},
 			"renderer" : {
 				"mesh" : "cube",
+				"shader" : "standard",
+				"material" : "plastic"
+			}
+		},
+		{
+			"name" : "dragon",
+			"transform" : {
+				"scale" : [10.0, 10.0, 10.0],
+				"orientation" : [0.0, 0.0, 0.0],
+				"position" : [5.0, 0.0, 0.0]
+			},
+			"renderer" : {
+				"mesh" : "dragon",
 				"shader" : "standard",
 				"material" : "plastic"
 			}

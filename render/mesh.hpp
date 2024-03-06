@@ -57,4 +57,5 @@ void mesh_dispose(mesh_t& mesh)
 
 	glDeleteVertexArrays(1, &mesh.vao_id);
 	glDeleteBuffers(1, &mesh.vbo_id);
+	delete[] mesh.verts;
 }

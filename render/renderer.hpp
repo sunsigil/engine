@@ -11,6 +11,9 @@
 #include "shader.hpp"
 #include "texture.hpp"
 #include "material.hpp"
+#include "error.hpp"
+
+#include <iostream>
 
 struct renderer_t
 {
@@ -26,39 +29,52 @@ void renderer_init(renderer_t& renderer)
 	renderer.material = nullptr;
 }
 
-void set_float_uniform(shader_t* shader, std::string name, float value)
+bool set_float_uniform(shader_t* shader, std::string name, float value)
 {
 	GLint loc = glGetUniformLocation(shader->prog_id, name.c_str());
 	if(loc != -1)
-	{ glProgramUniform1f(shader->prog_id, loc, value); }
+	{
+		glProgramUniform1f(shader->prog_id, loc, value);
+		return true;
+	}
+	return false;
 }
 
-void set_vec4_uniform(shader_t* shader, std::string name, glm::vec4 value)
+bool set_vec4_uniform(shader_t* shader, std::string name, glm::vec4 value)
 {
 	GLint loc = glGetUniformLocation(shader->prog_id, name.c_str());
 	if(loc != -1)
-	{ glProgramUniform4fv(shader->prog_id, loc, 1, glm::value_ptr(value)); }
+	{
+		glProgramUniform4fv(shader->prog_id, loc, 1, glm::value_ptr(value));
+		return true;
+	}
+	return false;
 }
 
-void set_mat4_uniform(shader_t* shader, std::string name, glm::mat4 value)
+bool set_mat4_uniform(shader_t* shader, std::string name, glm::mat4 value)
 {
 	GLint loc = glGetUniformLocation(shader->prog_id, name.c_str());
 	if(loc != -1)
-	{ glProgramUniformMatrix4fv(shader->prog_id, loc, 1, GL_FALSE, glm::value_ptr(value)); }
+	{
+		glProgramUniformMatrix4fv(shader->prog_id, loc, 1, GL_FALSE, glm::value_ptr(value));
+		return true;
+	}
+	return false;
 }
 
-void set_tex2_uniform(shader_t* shader, std::string name, int n, texture_t* value)
+bool set_tex2_uniform(shader_t* shader, std::string name, int n, texture_t* value)
 {
 	if(value == nullptr)
-		return;
+		return false;
 
 	GLint loc = glGetUniformLocation(shader->prog_id, name.c_str());
 	if(loc == -1)
-		return;
+		return false;
 
 	glProgramUniform1i(shader->prog_id, loc, n);
 	glActiveTexture(GL_TEXTURE0+n);
 	glBindTexture(GL_TEXTURE_2D, value->tex_id);
+	return true;
 }
 
 void render(renderer_t& renderer, glm::mat4 M, glm::mat4 V, glm::mat4 P, float near, float far)

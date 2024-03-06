@@ -22,11 +22,6 @@ typedef struct OBJ
 	int vn_count;
 	int f_count;
 
-	size_t vs_size;
-	size_t vts_size;
-	size_t vns_size;
-	size_t fs_size;
-
 	float* vs;
 	float* vts;
 	float* vns;

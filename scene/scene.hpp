@@ -26,9 +26,9 @@ void scene_init(scene_t& scene, int capacity)
 		capacity = SCENE_MAX_CAPACITY;
 	}
 
-	std::string* names = (std::string*) malloc(sizeof(std::string) * capacity);
-	transform_t* transforms = (transform_t*) malloc(sizeof(transform_t) * capacity);
-	renderer_t* renderers = (renderer_t*) malloc(sizeof(renderer_t) * capacity);
+	std::string* names = new std::string[capacity];
+	transform_t* transforms = new transform_t[capacity];
+	renderer_t* renderers = new renderer_t[capacity];
 
 	scene.capacity = capacity;
 	scene.size = 0;
@@ -44,7 +44,7 @@ void scene_add(scene_t& scene, std::string name, transform_t transform, renderer
 		std::cerr << "[scene_add] error: scene is at max capacity" << std::endl;
 		return;
 	}
-
+	
 	scene.names[scene.size] = name;
 	scene.transforms[scene.size] = transform;
 	scene.renderers[scene.size] = renderer;
@@ -53,7 +53,7 @@ void scene_add(scene_t& scene, std::string name, transform_t transform, renderer
 
 void scene_dispose(scene_t& scene)
 {
-	free(scene.names);
-	free(scene.transforms);
-	free(scene.renderers);
+	delete[] scene.names;
+	delete[] scene.transforms;
+	delete[] scene.renderers;
 }

@@ -6,6 +6,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "error.hpp"
+
 struct shader_t
 {
 	GLuint vert_id;
@@ -24,7 +26,7 @@ void shader_init(shader_t& shader, char* vert_src, char* frag_src)
 	glCompileShader(vert_id);
 	
 	glGetShaderiv(vert_id, GL_COMPILE_STATUS, &shader_status);
-	if(!shader_status)
+	if(shader_status != GL_TRUE)
 	{
 		glGetShaderInfoLog(vert_id, 512, NULL, shader_log);
 		std::cerr << "[shader_init] error: failed to compile vertex shader " << std::endl;
@@ -37,7 +39,7 @@ void shader_init(shader_t& shader, char* vert_src, char* frag_src)
 	glCompileShader(frag_id);
 
 	glGetShaderiv(frag_id, GL_COMPILE_STATUS, &shader_status);
-	if(!shader_status)
+	if(shader_status != GL_TRUE)
 	{
 		glGetShaderInfoLog(frag_id, 512, NULL, shader_log);
 		std::cerr << "[shader_init] error: failed to compile fragment shader " << std::endl;
@@ -50,8 +52,8 @@ void shader_init(shader_t& shader, char* vert_src, char* frag_src)
 	glAttachShader(prog_id, frag_id);
 	glLinkProgram(prog_id);
 	
-	glGetShaderiv(prog_id, GL_LINK_STATUS, &shader_status);
-	if(!shader_status)
+	glGetProgramiv(prog_id, GL_LINK_STATUS, &shader_status);
+	if(shader_status != GL_TRUE)
 	{
 		glGetShaderInfoLog(prog_id, 512, NULL, shader_log);
 		std::cerr << "[shader_init] error: failed to link shader program" << std::endl;
