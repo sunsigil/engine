@@ -43,6 +43,12 @@ int main(int argc, char** argv)
 	float last_time = glfwGetTime();
 	float time;
 	float dt;
+
+	glm::vec4 lights[2] = 
+	{
+		glm::vec4(0, 10, 0, 1),
+		glm::vec4(0, 0, 0, 1),
+	};
 	
 	configure_canvas();
 	while(!glfwWindowShouldClose(window.handle))
@@ -79,13 +85,15 @@ int main(int argc, char** argv)
 
 			euler_integrate(camera.transform, dt);
 		}
+
+		lights[1] = glm::vec4(10 * glm::cos(time), 5, 10 * glm::sin(time), 1);
 		
 		clear_canvas();
 		for(int i = 0; i < scene.size; i++)
 		{
 			transform_t transform = scene.transforms[i];
 			renderer_t renderer = scene.renderers[i];
-			render(camera, renderer, transform);
+			render(camera, renderer, transform, lights);
 		}
 
 		gui_begin(gui_state);

@@ -110,7 +110,7 @@ void clear_canvas()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void render(camera_t& camera, renderer_t& renderer, transform_t& transform)
+void render(camera_t& camera, renderer_t& renderer, transform_t& transform, glm::vec4* lights)
 {
 	glUseProgram(renderer.shader->prog_id);
 	glBindVertexArray(renderer.mesh->vao_id);
@@ -134,8 +134,9 @@ void render(camera_t& camera, renderer_t& renderer, transform_t& transform)
 	set_vec4_uniform(renderer.shader, "eye", glm::vec4(camera.transform.position, 1));
 	set_float_uniform(renderer.shader, "near", camera.near);
 	set_float_uniform(renderer.shader, "far", camera.far);
-	
-	set_vec4_uniform(renderer.shader, "light_pos", glm::vec4(10, 10, 10, 1));
+		
+	GLint lights_loc = glGetUniformLocation(renderer.shader->prog_id, "lights");
+	glProgramUniform4fv(renderer.shader->prog_id, lights_loc, 2, glm::value_ptr(*lights));
 
 	glDrawArrays(renderer.mesh->mode, 0, renderer.mesh->vert_count);
 	glBindVertexArray(0);
