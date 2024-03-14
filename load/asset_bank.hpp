@@ -17,15 +17,7 @@
 #include <map>
 #include <vector>
 
-struct asset_bank_t
-{
-	std::map<std::string, texture_t> textures;
-	std::map<std::string, mesh_t> meshes;
-	std::map<std::string, shader_t> shaders;
-	std::map<std::string, material_t> materials;
-};
-
-void texture_BMP_init(texture_t& texture, BMP_t& bmp)
+texture_t* spawn_BMP_texture(BMP_t& bmp)
 {
 	GLubyte* array_copy = (GLubyte*) malloc(bmp.array_size);
 	memcpy(array_copy, bmp.array, bmp.array_size);
@@ -33,10 +25,10 @@ void texture_BMP_init(texture_t& texture, BMP_t& bmp)
 	int channels = bmp.depth/8;
 	GLenum format = channels == 3 ? GL_RGB : GL_RGBA;
 
-	texture_init(texture, array_copy, bmp.width, bmp.height, format);
+	return new texture_t(array_copy, bmp.width, bmp.height, format);
 }
 
-void mesh_OBJ_init(mesh_t& mesh, OBJ_t& obj)
+mesh_t* spawn_OBJ_mesh(OBJ_t& obj)
 {
 	int vert_count = obj.f_count * 3;
 	vertex_t* verts = new vertex_t[vert_count];
@@ -73,42 +65,52 @@ void mesh_OBJ_init(mesh_t& mesh, OBJ_t& obj)
 		}
 	}
 	
-	mesh_init(mesh, verts, vert_count, GL_TRIANGLES);
+	return new mesh_t(verts, vert_count, GL_TRIANGLES);
+
 }
 
-void shader_TXT_init(shader_t& shader, TXT_t& vert_txt, TXT_t& frag_txt)
+material_t* spawn_MTL_material(MTL_t& mtl, std::map<std::string, texture_t*>& textures)
 {
-	shader_init(shader, vert_txt.text, frag_txt.text);	
-}
-
-void material_MTL_init(material_t& material, MTL_t& mtl, asset_bank_t& bank)
-{
-	material_init(material);
+	material_t* material = new material_t();
 	if(mtl.Ka != NULL)
-		material.Ka = glm::vec3(mtl.Ka[0], mtl.Ka[1], mtl.Ka[2]);
+		material->Ka = glm::vec3(mtl.Ka[0], mtl.Ka[1], mtl.Ka[2]);
 	if(mtl.Kd != NULL)
-		material.Kd = glm::vec3(mtl.Kd[0], mtl.Kd[1], mtl.Kd[2]);
+		material->Kd = glm::vec3(mtl.Kd[0], mtl.Kd[1], mtl.Kd[2]);
 	if(mtl.Ks != NULL)
-		material.Ks = glm::vec3(mtl.Ks[0], mtl.Ks[1], mtl.Ks[2]);
-	material.d = mtl.d;
-	material.halo = mtl.halo;
-	material.Ns = mtl.Ns;
+		material->Ks = glm::vec3(mtl.Ks[0], mtl.Ks[1], mtl.Ks[2]);
+	material->d = mtl.d;
+	material->halo = mtl.halo;
+	material->Ns = mtl.Ns;
 	if(mtl.map_Ka != NULL)
-		material.map_Ka = &bank.textures[mtl.map_Ka];
+		material->map_Ka = textures[mtl.map_Ka];
 	if(mtl.map_Kd != NULL)
-		material.map_Kd = &bank.textures[mtl.map_Kd];
+		material->map_Kd = textures[mtl.map_Kd];
 	if(mtl.map_Ks != NULL)
-		material.map_Ks = &bank.textures[mtl.map_Ks];
+		material->map_Ks = textures[mtl.map_Ks];
 	if(mtl.map_d != NULL)
-		material.map_d = &bank.textures[mtl.map_d];
+		material->map_d = textures[mtl.map_d];
+	return material;
 }
+
+shader_t* spawn_TXT_shader(TXT_t& vert_txt, TXT_t& frag_txt)
+{
+	return new shader_t(vert_txt.text, frag_txt.text);
+}
+
+struct asset_bank_t
+{
+	std::map<std::string, texture_t*> textures;
+	std::map<std::string, mesh_t*> meshes;
+	std::map<std::string, shader_t*> shaders;
+	std::map<std::string, material_t*> materials;
+};
 
 void asset_bank_init(asset_bank_t& bank, dir_node_t* dir)
 {
-	bank.textures = std::map<std::string, texture_t>();
-	bank.meshes = std::map<std::string, mesh_t>();
-	bank.shaders = std::map<std::string, shader_t>();
-	bank.materials = std::map<std::string, material_t>();
+	bank.textures = std::map<std::string, texture_t*>();
+	bank.meshes = std::map<std::string, mesh_t*>();
+	bank.shaders = std::map<std::string, shader_t*>();
+	bank.materials = std::map<std::string, material_t*>();
 
 	std::vector<dir_node_t*> files = std::vector<dir_node_t*>();
 	dir_pick_leaves(dir, files);
@@ -121,7 +123,7 @@ void asset_bank_init(asset_bank_t& bank, dir_node_t* dir)
 			std::cerr << "[asset_bank_init] loading texture asset: " << file->path << std::endl;
 			BMP_t bmp;
 			BMP_read(&bmp, file->path.c_str());
-			texture_BMP_init(bank.textures[file->name], bmp);
+			bank.textures[file->name] = spawn_BMP_texture(bmp);
 			BMP_dispose(&bmp);
 		}
 		else if(file->extension == "obj")
@@ -129,7 +131,7 @@ void asset_bank_init(asset_bank_t& bank, dir_node_t* dir)
 			std::cerr << "[asset_bank_init] loading mesh asset: " << file->path << std::endl;
 			OBJ_t obj;
 			OBJ_init(&obj, file->path.c_str());
-			mesh_OBJ_init(bank.meshes[file->name], obj);
+			bank.meshes[file->name] = spawn_OBJ_mesh(obj);
 			OBJ_dispose(&obj);
 		}
 		else if(file->extension == "vert")
@@ -140,7 +142,7 @@ void asset_bank_init(asset_bank_t& bank, dir_node_t* dir)
 			TXT_t vert, frag;
 			TXT_init(&vert, vert_path.c_str());
 			TXT_init(&frag, frag_path.c_str());
-			shader_TXT_init(bank.shaders[file->name], vert, frag);
+			bank.shaders[file->name] = spawn_TXT_shader(vert, frag);
 			TXT_dispose(&vert);
 			TXT_dispose(&frag);
 		}
@@ -153,7 +155,7 @@ void asset_bank_init(asset_bank_t& bank, dir_node_t* dir)
 			std::cerr << "[asset_bank_init] loading material asset: " << file->path << std::endl;
 			MTL_t mtl;
 			MTL_init(&mtl, file->path.c_str());
-			material_MTL_init(bank.materials[file->name], mtl, bank);
+			bank.materials[file->name] = spawn_MTL_material(mtl, bank.textures);
 			MTL_dispose(&mtl);
 		}
 	}

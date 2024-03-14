@@ -5,27 +5,36 @@ in vert_out
 	vec4 pos;
 	vec2 uv;
 	vec4 norm;
+	vec4 pos_world;
 } i;
 
+uniform vec4 Ka;
+uniform vec4 Kd;
+uniform vec4 Ks;
+uniform float d;
+uniform bool halo;
+uniform int Ns;
+uniform sampler2D map_Ka;
 uniform sampler2D map_Kd;
+uniform sampler2D map_Ks;
+uniform sampler2D map_d;
+
+uniform vec4 eye;
+
+uniform vec4 light_pos;
 
 out vec4 o;
 
 void main()
 {
-	vec4 light_dir = vec4(1,1,1,0);
+	o = Ka;
 
-	vec4 c = texture(map_Kd, i.uv);
+	vec4 light_dir = normalize(light_pos - i.pos_world);
+	float lambert = max(dot(i.norm, light_dir), 0);
+	o += texture(map_Kd, i.uv) * lambert;
 
-	vec3 n = normalize(i.norm.xyz);
-	vec3 l = -normalize(light_dir.xyz);
-	// vec3 v = normalize((cam_pos - i.world_pos).xyz);
-	// vec3 h = normalize(l + v);
-	// float nh = clamp(dot(n, h), 0, 1);
-	float nl = clamp(dot(i.norm.xyz, light_dir.xyz), 0, 1);
-	// float spec = pow(max(dot(n, h), 0), 50);
-
-	// (ka * od) + (nl * kd * od) + (dot(n, h)^n * ks * os)
-	o = 0.2 * c + nl * c; // + 0.5 * spec * vec4(1);
-	o.a = 1;
+	vec4 view = normalize(eye - i.pos_world);
+	vec4 halfway = normalize(view + light_dir);
+	float highlight = pow(max(dot(i.norm, halfway), 0), Ns);
+	o += Ks * highlight;
 }

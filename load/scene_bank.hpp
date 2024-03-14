@@ -2,9 +2,9 @@
 
 #include "formats/json.h"
 #include "scene.hpp"
-#include "asset_bank.hpp"
 #include "directory.hpp"
 #include "json_basics.hpp"
+#include "asset_bank.hpp"
 
 #include <string>
 #include <map>
@@ -16,40 +16,37 @@ struct scene_bank_t
 	std::map<std::string, scene_t> scenes;
 };
 
-void transform_JSON_init(transform_t& transform, JSON_head_t* json)
+transform_t transform_JSON_init(JSON_head_t* json)
 {
 	if(*json != JSON_OBJECT)
 	{
 		std::cerr << "[transform_JSON_init] error: expected JSON_OBJECT representation" << std::endl;
-		return;
+		return transform_t();
 	}
 
 	glm::vec3 scale = vec_JSON_init<3>(JSON_object_get(json, "scale"));
 	glm::quat orientation = glm::quat(vec_JSON_init<3>(JSON_object_get(json, "orientation")));
 	glm::vec3 position = vec_JSON_init<3>(JSON_object_get(json, "position"));
 
-	transform_init(transform, scale, orientation, position);
+	return transform_t(scale, orientation, position);
 }
 
-void renderer_JSON_init(renderer_t& renderer, JSON_head_t* json, asset_bank_t& assets)
+renderer_t renderer_JSON_init(JSON_head_t* json, asset_bank_t& assets)
 {
 	if(*json != JSON_OBJECT)
 	{
 		std::cerr << "[renderer_JSON_init] error: expected JSON_OBJECT representation" << std::endl;
-		return;
+		return renderer_t();
 	}
 
 	JSON_string_t* mesh_name = (JSON_string_t*) JSON_object_get(json, "mesh");
-	mesh_t* mesh = &assets.meshes[mesh_name->value];
+	mesh_t* mesh = assets.meshes[mesh_name->value];
 	JSON_string_t* shader_name = (JSON_string_t*) JSON_object_get(json, "shader");
-	shader_t* shader = &assets.shaders[shader_name->value];
+	shader_t* shader = assets.shaders[shader_name->value];
 	JSON_string_t* material_name = (JSON_string_t*) JSON_object_get(json, "material");
-	material_t* material = &assets.materials[material_name->value];
+	material_t* material = assets.materials[material_name->value];
 	
-	renderer_init(renderer);
-	renderer.mesh = mesh;
-	renderer.shader = shader;
-	renderer.material = material;
+	return renderer_t(mesh, shader, material);
 }
 
 void scene_JSON_init(scene_t& scene, JSON_head_t* json, asset_bank_t& assets)
@@ -77,12 +74,10 @@ void scene_JSON_init(scene_t& scene, JSON_head_t* json, asset_bank_t& assets)
 		std::string name = std::string(((JSON_string_t*) name_json)->value);
 
 		JSON_head_t* transform_json = JSON_object_get(prop, "transform");
-		transform_t transform;
-		transform_JSON_init(transform, transform_json);
+		transform_t transform = transform_JSON_init(transform_json);
 
 		JSON_head_t* renderer_json = JSON_object_get(prop, "renderer");
-		renderer_t renderer;
-		renderer_JSON_init(renderer, renderer_json, assets);
+		renderer_t renderer = renderer_JSON_init(renderer_json, assets);
 
 		scene_add(scene, name, transform, renderer);
 	}

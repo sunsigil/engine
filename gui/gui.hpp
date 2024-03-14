@@ -4,19 +4,18 @@
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
 #include "imgui/misc/cpp/imgui_stdlib.h"
-
 #include <glm/gtc/type_ptr.hpp>
-
 #include "window.hpp"
 #include "transform.hpp"
 #include "scene.hpp"
 #include "asset_bank.hpp"
+#include "cowtools.hpp"
 
 struct gui_state_t
 {
 	window_t* window;
 	scene_t* scene;
-	asset_bank_t* asset_bank;
+	asset_bank_t* asset_bank;	
 };
 
 void gui_begin(gui_state_t& state)
@@ -47,7 +46,7 @@ void gui_draw_window_info(gui_state_t& state, float fps)
 	ImGui::PopID();
 }
 
-void gui_draw_transform(transform_t& transform)
+void gui_draw_transform(gui_state_t& state, transform_t& transform)
 {
 	ImGui::PushID("gui_draw_transform");
 	ImGui::PushID(&transform);
@@ -57,6 +56,35 @@ void gui_draw_transform(transform_t& transform)
 	glm::vec3 euler_angles = glm::eulerAngles(transform.orientation);
 	ImGui::InputFloat3("Orientation", glm::value_ptr(euler_angles));
 	transform.orientation = glm::quat(euler_angles);
+	ImGui::PopItemWidth();
+	ImGui::PopID();
+	ImGui::PopID();
+}
+
+void gui_draw_combo(gui_state_t& state, std::vector<std::string> options, std::string& value)
+{
+	ImGui::PushID("gui_map_select");
+	ImGui::PushID(&value);
+	if(ImGui::BeginCombo("#value", value.c_str()))
+	{
+		for(std::string option : options)
+		{
+			if(ImGui::Selectable(option.c_str(), option == value))
+			{
+				value = option;
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::PopID();
+	ImGui::PopID();
+}
+
+void gui_draw_renderer(gui_state_t& state, renderer_t& renderer)
+{
+	ImGui::PushID("gui_draw_renderer");
+	ImGui::PushID(&renderer);
+	ImGui::PushItemWidth(state.window->dimensions.x/8);
 	ImGui::PopItemWidth();
 	ImGui::PopID();
 	ImGui::PopID();
@@ -74,7 +102,8 @@ void gui_draw_scene_info(gui_state_t& state)
 		{
 			if(ImGui::TreeNode(state.scene->names[i].c_str()))
 			{
-				gui_draw_transform(state.scene->transforms[i]);
+				gui_draw_transform(state, state.scene->transforms[i]);
+				gui_draw_renderer(state, state.scene->renderers[i]);
 				ImGui::TreePop();
 			}
 		}

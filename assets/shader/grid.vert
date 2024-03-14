@@ -5,7 +5,7 @@ layout (location = 1) in vec2 uv;
 layout (location = 2) in vec3 norm;
 
 uniform mat4 V;
-uniform mat4 P;
+uniform mat4 P_inv;
 
 uniform float near;
 uniform float far;
@@ -18,7 +18,7 @@ out vert_out
 
 vec3 unproject(float x, float y, float z) 
 {
-    vec4 pos = inverse(V) * inverse(P) * vec4(x, y, z, 1.0);
+    vec4 pos = inverse(V) * P_inv * vec4(x, y, z, 1.0);
     return pos.xyz / pos.w;
 }
 

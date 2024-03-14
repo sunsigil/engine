@@ -13,6 +13,7 @@ out vert_out
 	vec4 pos;
 	vec2 uv;
 	vec4 norm;
+	vec4 pos_world;
 } o;
 
 void main()
@@ -20,5 +21,6 @@ void main()
 	o.pos = P*V*M * vec4(pos, 1);
 	o.uv = uv;
 	o.norm = normalize(transpose(inverse(M)) * vec4(norm, 0));
+	o.pos_world = M * vec4(pos, 1);
 	gl_Position = o.pos;
 }

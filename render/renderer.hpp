@@ -12,6 +12,7 @@
 #include "texture.hpp"
 #include "material.hpp"
 #include "error.hpp"
+#include "camera.hpp"
 
 #include <iostream>
 
@@ -20,14 +21,21 @@ struct renderer_t
 	mesh_t* mesh;
 	shader_t* shader;
 	material_t* material;
-};
+	
+	renderer_t()
+	{
+		this->mesh = nullptr;
+		this->shader = nullptr;
+		this->material = nullptr;
+	}
 
-void renderer_init(renderer_t& renderer)
-{
-	renderer.mesh = nullptr;
-	renderer.shader = nullptr;
-	renderer.material = nullptr;
-}
+	renderer_t(mesh_t* mesh, shader_t* shader, material_t* material)
+	{
+		this->mesh = mesh;
+		this->shader = shader;
+		this->material = material;
+	}
+};
 
 bool set_float_uniform(shader_t* shader, std::string name, float value)
 {
@@ -77,19 +85,57 @@ bool set_tex2_uniform(shader_t* shader, std::string name, int n, texture_t* valu
 	return true;
 }
 
-void render(renderer_t& renderer, glm::mat4 M, glm::mat4 V, glm::mat4 P, float near, float far)
+bool set_int_uniform(shader_t* shader, std::string name, int value)
+{
+	GLint loc = glGetUniformLocation(shader->prog_id, name.c_str());
+	if(loc != -1)
+	{
+		glProgramUniform1i(shader->prog_id, loc, value);
+		return true;
+	}
+	return false;
+}
+
+void configure_canvas()
+{
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void clear_canvas()
+{
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void render(camera_t& camera, renderer_t& renderer, transform_t& transform)
 {
 	glUseProgram(renderer.shader->prog_id);
 	glBindVertexArray(renderer.mesh->vao_id);
 
-	set_mat4_uniform(renderer.shader, "M", M);
-	set_mat4_uniform(renderer.shader, "V", V);
-	set_mat4_uniform(renderer.shader, "P", P);
+	set_mat4_uniform(renderer.shader, "M", transform.make_model());
+	set_mat4_uniform(renderer.shader, "V", camera.make_view());
+	set_mat4_uniform(renderer.shader, "P", camera.proj);
+	set_mat4_uniform(renderer.shader, "P_inv", camera.proj_inv);
 
-	set_float_uniform(renderer.shader, "near", near);
-	set_float_uniform(renderer.shader, "far", far);
-
-	set_tex2_uniform(renderer.shader, "map_Kd", 1, renderer.material->map_Kd);
+	set_vec4_uniform(renderer.shader, "Ka", glm::vec4(renderer.material->Ka, 1));
+	set_vec4_uniform(renderer.shader, "Kd", glm::vec4(renderer.material->Kd, 1));
+	set_vec4_uniform(renderer.shader, "Ks", glm::vec4(renderer.material->Ks, 1));
+	set_float_uniform(renderer.shader, "d", renderer.material->d);
+	set_int_uniform(renderer.shader, "halo", renderer.material->halo);
+	set_int_uniform(renderer.shader, "Ns", renderer.material->Ns);
+	set_tex2_uniform(renderer.shader, "map_Ka", 1, renderer.material->map_Ka);
+	set_tex2_uniform(renderer.shader, "map_Kd", 2, renderer.material->map_Kd);
+	set_tex2_uniform(renderer.shader, "map_Ks", 3, renderer.material->map_Ks);
+	set_tex2_uniform(renderer.shader, "map_d", 4, renderer.material->map_d);
+	
+	set_vec4_uniform(renderer.shader, "eye", glm::vec4(camera.transform.position, 1));
+	set_float_uniform(renderer.shader, "near", camera.near);
+	set_float_uniform(renderer.shader, "far", camera.far);
+	
+	set_vec4_uniform(renderer.shader, "light_pos", glm::vec4(10, 10, 10, 1));
 
 	glDrawArrays(renderer.mesh->mode, 0, renderer.mesh->vert_count);
 	glBindVertexArray(0);
