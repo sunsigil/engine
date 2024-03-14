@@ -31,13 +31,17 @@ void main()
 
 	for(int lidx = 0; lidx < lights.length(); lidx++)
 	{
-		vec4 light_dir = normalize(lights[lidx] - i.pos_world);
+		vec4 light = lights[lidx] - i.pos_world;
+		float light_dist = length(light);
+		float atten = 1.0f/light_dist;
+
+		vec4 light_dir = light / light_dist;
 		float lambert = max(dot(i.norm, light_dir), 0);
-		o += texture(map_Kd, i.uv) * lambert;
+		o += texture(map_Kd, i.uv) * lambert * atten;
 
 		vec4 view = normalize(eye - i.pos_world);
 		vec4 halfway = normalize(view + light_dir);
 		float highlight = pow(max(dot(i.norm, halfway), 0), Ns);
-		o += Ks * highlight;
+		o += Ks * highlight * atten;
 	}
 }

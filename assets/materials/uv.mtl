@@ -1,5 +1,5 @@
-newmtl plastic
-Ka 0.1 0.1 0.1
+newmtl uv
+Ka 0.05 0.05 0.05
 Kd 1.0 1.0 1.0
 Ks 1.0 1.0 1.0
 d 1.0

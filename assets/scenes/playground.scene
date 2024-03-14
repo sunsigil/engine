@@ -1,29 +1,42 @@
 {
 	"props" : [
 		{
+			"name" : "sponza",
+			"transform" : {
+				"scale" : [1.0, 1.0, 1.0],
+				"orientation" : [0.0, 0.0, 0.0],
+				"position" : [0.0, 0.0, 0.0]
+			},
+			"renderer" : {
+				"mesh" : "sponza",
+				"shader" : "standard",
+				"material" : "stone_brick"
+			}
+		},
+		{
 			"name" : "cube",
 			"transform" : {
 				"scale" : [1.0, 1.0, 1.0],
 				"orientation" : [0.0, 0.0, 0.0],
-				"position" : [0.0, 0.0, 2.0]
+				"position" : [20.0, 1.0, 0.0]
 			},
 			"renderer" : {
 				"mesh" : "cube",
 				"shader" : "standard",
-				"material" : "plastic"
+				"material" : "uv"
 			}
 		},
 		{
 			"name" : "dragon",
 			"transform" : {
-				"scale" : [10.0, 10.0, 10.0],
-				"orientation" : [0.0, 0.0, 0.0],
-				"position" : [5.0, 0.0, 0.0]
+				"scale" : [15.0, 15.0, 15.0],
+				"orientation" : [0.0, 90.0, 0.0],
+				"position" : [0.0, 0.0, 0.0]
 			},
 			"renderer" : {
 				"mesh" : "dragon",
 				"shader" : "standard",
-				"material" : "plastic"
+				"material" : "grid"
 			}
 		}
 	]

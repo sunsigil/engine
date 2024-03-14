@@ -1,0 +1,7 @@
+newmtl stone_brick
+Ka 0.05 0.05 0.05
+Kd 1.0 1.0 1.0
+Ks 0.25 0.25 0.25
+d 1.0
+Ns 10
+map_Kd stone_brick
