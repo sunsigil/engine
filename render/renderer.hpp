@@ -85,6 +85,21 @@ bool set_tex2_uniform(shader_t* shader, std::string name, int n, texture_t* valu
 	return true;
 }
 
+bool set_tex2_uniform(shader_t* shader, std::string name, int n, GLuint tex_id)
+{
+	if(tex_id == -1)
+		return false;
+
+	GLint loc = glGetUniformLocation(shader->prog_id, name.c_str());
+	if(loc == -1)
+		return false;
+
+	glProgramUniform1i(shader->prog_id, loc, n);
+	glActiveTexture(GL_TEXTURE0+n);
+	glBindTexture(GL_TEXTURE_2D, tex_id);
+	return true;
+}
+
 bool set_int_uniform(shader_t* shader, std::string name, int value)
 {
 	GLint loc = glGetUniformLocation(shader->prog_id, name.c_str());
@@ -96,21 +111,7 @@ bool set_int_uniform(shader_t* shader, std::string name, int value)
 	return false;
 }
 
-void configure_canvas()
-{
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-}
-
-void clear_canvas()
-{
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void render(camera_t& camera, renderer_t& renderer, transform_t& transform, glm::vec4* lights)
+void render(camera_t& camera, renderer_t& renderer, transform_t& transform, glm::vec4* lights, glm::mat4 L, GLuint shadow_map)
 {
 	glUseProgram(renderer.shader->prog_id);
 	glBindVertexArray(renderer.mesh->vao_id);
@@ -119,6 +120,7 @@ void render(camera_t& camera, renderer_t& renderer, transform_t& transform, glm:
 	set_mat4_uniform(renderer.shader, "V", camera.make_view());
 	set_mat4_uniform(renderer.shader, "P", camera.proj);
 	set_mat4_uniform(renderer.shader, "P_inv", camera.proj_inv);
+	set_mat4_uniform(renderer.shader, "L", L);
 
 	set_vec4_uniform(renderer.shader, "Ka", glm::vec4(renderer.material->Ka, 1));
 	set_vec4_uniform(renderer.shader, "Kd", glm::vec4(renderer.material->Kd, 1));
@@ -126,18 +128,19 @@ void render(camera_t& camera, renderer_t& renderer, transform_t& transform, glm:
 	set_float_uniform(renderer.shader, "d", renderer.material->d);
 	set_int_uniform(renderer.shader, "halo", renderer.material->halo);
 	set_int_uniform(renderer.shader, "Ns", renderer.material->Ns);
-	set_tex2_uniform(renderer.shader, "map_Ka", 1, renderer.material->map_Ka);
-	set_tex2_uniform(renderer.shader, "map_Kd", 2, renderer.material->map_Kd);
-	set_tex2_uniform(renderer.shader, "map_Ks", 3, renderer.material->map_Ks);
-	set_tex2_uniform(renderer.shader, "map_d", 4, renderer.material->map_d);
+	set_tex2_uniform(renderer.shader, "map_Ka", 0, renderer.material->map_Ka);
+	set_tex2_uniform(renderer.shader, "map_Kd", 1, renderer.material->map_Kd);
+	set_tex2_uniform(renderer.shader, "map_Ks", 2, renderer.material->map_Ks);
+	set_tex2_uniform(renderer.shader, "map_d", 3, renderer.material->map_d);
 	
 	set_vec4_uniform(renderer.shader, "eye", glm::vec4(camera.transform.position, 1));
 	set_float_uniform(renderer.shader, "near", camera.near);
 	set_float_uniform(renderer.shader, "far", camera.far);
-		
+
 	GLint lights_loc = glGetUniformLocation(renderer.shader->prog_id, "lights");
 	glProgramUniform4fv(renderer.shader->prog_id, lights_loc, 2, glm::value_ptr(*lights));
-
+	set_tex2_uniform(renderer.shader, "shadow_map", 4, shadow_map);
+		
 	glDrawArrays(renderer.mesh->mode, 0, renderer.mesh->vert_count);
 	glBindVertexArray(0);
 	glUseProgram(0);

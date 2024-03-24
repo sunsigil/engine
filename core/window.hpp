@@ -20,7 +20,10 @@ struct window_t
 {
 	GLFWwindow* handle;
 
-	glm::ivec2 dimensions;
+	GLFWmonitor* monitor;
+	const GLFWvidmode* mode;
+	glm::ivec2 window_size;
+	glm::ivec3 frame_size;
 	ImGuiWindowFlags imgui_flags;
 
 	std::string title_str;
@@ -32,7 +35,7 @@ struct window_t
 	glm::vec2 mouse_pos;
 };
 
-void window_init(window_t& window, std::string name, glm::ivec2 dimensions)
+void window_init(window_t& window, std::string name, glm::ivec2 window_size)
 {
 	glfwSetErrorCallback(glfw_error_callback);
 
@@ -43,13 +46,18 @@ void window_init(window_t& window, std::string name, glm::ivec2 dimensions)
 		exit(EXIT_FAILURE);
 	} 
 
+	window.monitor = glfwGetPrimaryMonitor();
+	window.mode = glfwGetVideoMode(window.monitor);
+	glfwWindowHint(GLFW_SCALE_TO_MONITOR, GL_TRUE);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   
 	std::cerr << "[window_init] creating window" << std::endl;
-	GLFWwindow* handle = glfwCreateWindow(dimensions.x, dimensions.y, name.c_str(), NULL, NULL);
+	GLFWwindow* handle = glfwCreateWindow(window_size.x, window_size.y, name.c_str(), NULL, NULL);
+	glfwSetWindowSize(handle, window_size.x, window_size.y);
+	glfwGetFramebufferSize(handle, &window.frame_size.x, &window.frame_size.y);
 	if(!handle) 
 	{
 		std::cerr << "[window_init] error: failed to create window" << std::endl;
@@ -98,7 +106,7 @@ void window_init(window_t& window, std::string name, glm::ivec2 dimensions)
 	ImGui_ImplOpenGL3_Init("#version 150");
 
 	window.handle = handle;
-	window.dimensions = dimensions;
+	window.window_size = window_size;
 	window.imgui_flags = imgui_flags;
 	window.title_str = name;
   	window.renderer_str = std::string(renderer_cstr);
@@ -128,7 +136,7 @@ glm::vec2 get_mouse_pos(window_t& window)
 {
 	double x, y;
 	glfwGetCursorPos(window.handle, &x, &y);
-	x /= window.dimensions.x; y /= window.dimensions.y;
+	x /= window.window_size.x; y /= window.window_size.y;
 	x -= 0.5f; y -= 0.5f;
 	x *= 2.0f; y *= 2.0f; 
 	return glm::vec2(x, y);

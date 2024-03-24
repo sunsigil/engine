@@ -25,7 +25,7 @@ void gui_begin(gui_state_t& state)
 	ImGui::NewFrame();
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
-	ImGui::SetNextWindowSize(ImVec2(state.window->dimensions.x, state.window->dimensions.y));
+	ImGui::SetNextWindowSize(ImVec2(state.window->window_size.x, state.window->window_size.y));
 	ImGui::Begin("##window", nullptr, state.window->imgui_flags);
 }
 
@@ -39,6 +39,8 @@ void gui_end()
 void gui_draw_window_info(gui_state_t& state, float fps)
 {
 	ImGui::PushID("gui_draw_window_info");
+	ImGui::Text("Window Size: %d x %d", state.window->window_size.x, state.window->window_size.y);
+	ImGui::Text("Frame Size: %d x %d", state.window->frame_size.x, state.window->frame_size.y);
 	ImGui::Text("Renderer: %s", state.window->renderer_str.c_str());
 	ImGui::Text("GL Version: %s", state.window->version_str.c_str());
 	ImGui::Text("GLSL Version: %s", state.window->glsl_str.c_str());
@@ -50,7 +52,7 @@ void gui_draw_transform(gui_state_t& state, transform_t& transform)
 {
 	ImGui::PushID("gui_draw_transform");
 	ImGui::PushID(&transform);
-	ImGui::PushItemWidth(state.window->dimensions.x/8);
+	ImGui::PushItemWidth(state.window->window_size.x/8);
 	ImGui::InputFloat3("Scale", glm::value_ptr(transform.scale));
 	ImGui::InputFloat3("Position", glm::value_ptr(transform.position));
 	glm::vec3 euler_angles = glm::eulerAngles(transform.orientation);
@@ -84,7 +86,7 @@ void gui_draw_renderer(gui_state_t& state, renderer_t& renderer)
 {
 	ImGui::PushID("gui_draw_renderer");
 	ImGui::PushID(&renderer);
-	ImGui::PushItemWidth(state.window->dimensions.x/8);
+	ImGui::PushItemWidth(state.window->window_size.x/8);
 	ImGui::PopItemWidth();
 	ImGui::PopID();
 	ImGui::PopID();
