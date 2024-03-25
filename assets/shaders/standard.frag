@@ -30,8 +30,17 @@ float shadowing(vec4 pos_light)
 {
 	vec3 pos_ndc = pos_light.xyz / pos_light.w;
 	vec3 pos_normalized = pos_ndc * 0.5 + 0.5;
-	float near_shadow = texture(shadow_map, pos_normalized.xy).r;
-	return near_shadow < pos_normalized.z ? 1.0 : 0.0;
+	float shadow = 0.0f;
+	vec2 texel_size = 1.0f / textureSize(shadow_map, 0);
+	for(int y = -1; y <= 1; y++)
+	{
+		for(int x = -1; x <= 1; x++)
+		{
+			float pcf = texture(shadow_map, pos_normalized.xy + vec2(x,y)*texel_size).r;
+			shadow += float(pcf < pos_normalized.z - 0.005);
+		}
+	}
+	return shadow/9;
 }
 
 void main()
@@ -40,21 +49,24 @@ void main()
 
 	for(int lidx = 0; lidx < 2; lidx++)
 	{
-		if(shadowing(i.pos_light) < 1 || lights[lidx].w > 0)
-		{
-			vec4 light = lights[lidx];
-			vec4 light_vec = light - i.pos_world * light.w;
-			float light_dist = length(light_vec);
-			float atten = light.w == 1 ? 1.0f/light_dist : 1;
+		float light_strength = 1-shadowing(i.pos_light) + float(lights[lidx].w > 0);
+		light_strength = clamp(light_strength, 0, 1);
+		vec4 light = vec4(0,0,0,1);
 
-			vec4 light_dir = light / light_dist;
-			float lambert = clamp(dot(i.norm, light_dir), 0, 1);
-			o += texture(map_Kd, i.uv) * lambert * atten;
+		vec4 light_vec = lights[lidx];
+		vec4 light_ray = light_vec - i.pos_world * light_vec.w;
+		float light_dist = length(light_ray);
+		float atten = light_vec.w == 1 ? 1.0f/light_dist : 1;
 
-			vec4 view = normalize(eye - i.pos_world);
-			vec4 halfway = normalize(view + light_dir);
-			float highlight = pow(max(dot(i.norm, halfway), 0), Ns);
-			o += Ks * highlight * atten;
-		}
+		vec4 light_dir = light_ray / light_dist;
+		float lambert = clamp(dot(i.norm, light_dir), 0, 1);
+		light += texture(map_Kd, i.uv) * lambert * atten;
+
+		vec4 view = normalize(eye - i.pos_world);
+		vec4 halfway = normalize(view + light_dir);
+		float highlight = pow(max(dot(i.norm, halfway), 0), Ns);
+		light += Ks * highlight * atten;
+
+		o += light_strength * light;
 	}
 }

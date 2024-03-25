@@ -7,7 +7,5 @@ out vec4 colour;
 
 void main()
 {
-	vec4 sample = texture(screen_tex, screen_uv);
-	float depth = sample.r;
-	colour = vec4(vec3(depth), 1);
+	colour = texture(screen_tex, screen_uv);
 }

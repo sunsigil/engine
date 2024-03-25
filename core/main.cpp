@@ -11,7 +11,7 @@
 #include "asset_bank.hpp"
 #include "scene_bank.hpp"
 
-#define SHADOW_MAP_SIZE 2048
+#define SHADOW_MAP_SIZE 4096
 
 int main(int argc, char** argv)
 {
@@ -29,11 +29,11 @@ int main(int argc, char** argv)
 
 	scene_t scene = scene_bank.scenes["playground"];
 	
-	/*transform_t grid_transform = transform_t();
+	transform_t grid_transform = transform_t();
 	mesh_t grid_mesh(gen_AA_plane(Z, CW), 6, GL_TRIANGLES);
 	material_t grid_material = material_t();
 	renderer_t grid_renderer(&grid_mesh, assets.shaders["grid"], &grid_material);
-	scene_add(scene, "grid", grid_transform, grid_renderer);*/
+	scene_add(scene, "grid", grid_transform, grid_renderer);
 
 	transform_t cam_transform = transform_t();
 	camera_t camera = camera_t(cam_transform, 1, window.window_size.x / (float) window.window_size.y, 0.1f, 1000.0f);
@@ -72,11 +72,35 @@ int main(int argc, char** argv)
 	glReadBuffer(GL_NONE);
 	glViewport(0, 0, window.frame_size.x, window.frame_size.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
+		
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	glBindFramebuffer(GL_FRAMEBUFFER, shadow_fbo);
+	glm::vec3 light_inv = glm::vec3(0.01,1,0.05);
+	glm::mat4 V_light = glm::lookAt(light_inv, glm::vec3(0), glm::vec3(0,0,1));
+	float s = 50;
+	glm::mat4 P_light = glm::ortho(-s, s, -s, s, -s, s);
+	glm::mat4 L = P_light * V_light;
+	shader_t* shadow_shader = assets.shaders["dirshade"];
+	glClear(GL_DEPTH_BUFFER_BIT);
+	for(int i = 0; i < scene.size; i++)
+	{
+		transform_t transform = scene.transforms[i];
+		renderer_t renderer = scene.renderers[i];
+		glUseProgram(shadow_shader->prog_id);
+		glBindVertexArray(renderer.mesh->vao_id);
+		set_mat4_uniform(shadow_shader, "M", transform.make_model());
+		set_mat4_uniform(shadow_shader, "L", L);
+		glDrawArrays(renderer.mesh->mode, 0, renderer.mesh->vert_count);
+		glBindVertexArray(0);
+		glUseProgram(0);
+	}
+	glViewport(0, 0, window.frame_size.x, window.frame_size.y);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glEnable(GL_CULL_FACE);
+
 	while(!glfwWindowShouldClose(window.handle))
 	{
 		time = glfwGetTime();
@@ -113,30 +137,6 @@ int main(int argc, char** argv)
 		}
 
 		lights[1] = glm::vec4(10 * glm::cos(time), 5, 10 * glm::sin(time), 1);
-
-		glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
-		glBindFramebuffer(GL_FRAMEBUFFER, shadow_fbo);
-		glm::vec3 light_inv = glm::vec3(0,1,0);
-		glm::mat4 V_light = glm::lookAt(light_inv, glm::vec3(0), glm::vec3(0,0,1));
-		float s = 100;
-		glm::mat4 P_light = glm::ortho(-s, s, -s, s, -s, s);
-		glm::mat4 L = P_light * V_light;
-		shader_t* shadow_shader = assets.shaders["dirshade"];
-		glClear(GL_DEPTH_BUFFER_BIT);
-		for(int i = 0; i < scene.size; i++)
-		{
-			transform_t transform = scene.transforms[i];
-			renderer_t renderer = scene.renderers[i];
-			glUseProgram(shadow_shader->prog_id);
-			glBindVertexArray(renderer.mesh->vao_id);
-			set_mat4_uniform(shadow_shader, "M", transform.make_model());
-			set_mat4_uniform(shadow_shader, "L", L);
-			glDrawArrays(renderer.mesh->mode, 0, renderer.mesh->vert_count);
-			glBindVertexArray(0);
-			glUseProgram(0);
-		}
-		glViewport(0, 0, window.frame_size.x, window.frame_size.y);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
