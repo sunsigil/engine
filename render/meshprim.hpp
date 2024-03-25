@@ -24,9 +24,9 @@ vertex_t* gen_AA_plane(axis_t axis, orient_t orient)
 	verts[0].pos[axis_a] = -1; verts[0].pos[axis_b] = -1;
 	verts[0].uv = glm::vec2(0,0);
 	verts[1].pos[axis_a] = -1; verts[1].pos[axis_b] = 1;
-	verts[1].uv = glm::vec2(1,0);
+	verts[1].uv = glm::vec2(0,1);
 	verts[2].pos[axis_a] = 1; verts[2].pos[axis_b] = -1;
-	verts[2].uv = glm::vec2(0,1);
+	verts[2].uv = glm::vec2(1,0);
 	verts[3].pos[axis_a] = 1; verts[3].pos[axis_b] = 1;
 	verts[3].uv = glm::vec2(1,1);
 

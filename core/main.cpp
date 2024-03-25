@@ -11,6 +11,8 @@
 #include "asset_bank.hpp"
 #include "scene_bank.hpp"
 
+#define SHADOW_MAP_SIZE 2048
+
 int main(int argc, char** argv)
 {
 	window_t window;
@@ -39,6 +41,7 @@ int main(int argc, char** argv)
 	gui_state_t gui_state;
 	gui_state.window = &window;
 	gui_state.scene = &scene;
+	gui_state.camera = &camera;
 	
 	float last_time = glfwGetTime();
 	float time;
@@ -46,7 +49,7 @@ int main(int argc, char** argv)
 
 	glm::vec4 lights[2] = 
 	{
-		glm::vec4(0, 100, 0, 0),
+		glm::vec4(0, 1, 0, 0),
 		glm::vec4(0, 0, 0, 1),
 	};
 
@@ -56,40 +59,17 @@ int main(int argc, char** argv)
 	glGenTextures(1, &shadow_map);
 	
 	glBindTexture(GL_TEXTURE_2D, shadow_map);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); 
 	
-	glViewport(0, 0, 1024, 1024);
+	glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 	glBindFramebuffer(GL_FRAMEBUFFER, shadow_fbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadow_map, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
-	glViewport(0, 0, window.frame_size.x, window.frame_size.y);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	
-	glViewport(0, 0, 1024, 1024);
-	glBindFramebuffer(GL_FRAMEBUFFER, shadow_fbo);
-	float shadow_near = 1.0f, shadow_far = 100.0f;
-	glm::mat4 V_light = glm::lookAt(glm::vec3(lights[0]), glm::vec3(0), glm::vec3(0,1,0));
-	glm::mat4 P_light = glm::ortho(-100.0f, 100.0f, -100.0f, 100.0f, shadow_near, shadow_far);
-	glm::mat4 L = P_light * V_light;	
-	shader_t* shadow_shader = assets.shaders["dirshade"];
-    glClear(GL_DEPTH_BUFFER_BIT);
-	for(int i = 0; i < scene.size; i++)
-	{
-		transform_t transform = scene.transforms[i];
-		renderer_t renderer = scene.renderers[i];
-		glUseProgram(shadow_shader->prog_id);
-		glBindVertexArray(renderer.mesh->vao_id);
-		set_mat4_uniform(shadow_shader, "M", transform.make_model());
-		set_mat4_uniform(shadow_shader, "L", L);
-		glDrawArrays(renderer.mesh->mode, 0, renderer.mesh->vert_count);
-		glBindVertexArray(0);
-		glUseProgram(0);
-	}
 	glViewport(0, 0, window.frame_size.x, window.frame_size.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -133,6 +113,30 @@ int main(int argc, char** argv)
 		}
 
 		lights[1] = glm::vec4(10 * glm::cos(time), 5, 10 * glm::sin(time), 1);
+
+		glViewport(0, 0, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+		glBindFramebuffer(GL_FRAMEBUFFER, shadow_fbo);
+		glm::vec3 light_inv = glm::vec3(0,1,0);
+		glm::mat4 V_light = glm::lookAt(light_inv, glm::vec3(0), glm::vec3(0,0,1));
+		float s = 100;
+		glm::mat4 P_light = glm::ortho(-s, s, -s, s, -s, s);
+		glm::mat4 L = P_light * V_light;
+		shader_t* shadow_shader = assets.shaders["dirshade"];
+		glClear(GL_DEPTH_BUFFER_BIT);
+		for(int i = 0; i < scene.size; i++)
+		{
+			transform_t transform = scene.transforms[i];
+			renderer_t renderer = scene.renderers[i];
+			glUseProgram(shadow_shader->prog_id);
+			glBindVertexArray(renderer.mesh->vao_id);
+			set_mat4_uniform(shadow_shader, "M", transform.make_model());
+			set_mat4_uniform(shadow_shader, "L", L);
+			glDrawArrays(renderer.mesh->mode, 0, renderer.mesh->vert_count);
+			glBindVertexArray(0);
+			glUseProgram(0);
+		}
+		glViewport(0, 0, window.frame_size.x, window.frame_size.y);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -141,17 +145,17 @@ int main(int argc, char** argv)
 		{
 			transform_t transform = scene.transforms[i];
 			renderer_t renderer = scene.renderers[i];
-			render(camera, renderer, transform, lights, L, shadow_map);
+			render(camera, renderer, transform, lights, L);
 		}
 		
-		mesh_t screen_mesh(gen_AA_plane(Z, CW), 6, GL_TRIANGLES);
+		/*mesh_t screen_mesh(gen_AA_plane(Z, CW), 6, GL_TRIANGLES);
 		shader_t* screen_shader = assets.shaders["screentex"];
 		glUseProgram(screen_shader->prog_id);
 		glBindVertexArray(screen_mesh.vao_id);
 		set_tex2_uniform(screen_shader, "screen_tex", 0, shadow_map);
 		glDrawArrays(screen_mesh.mode, 0, screen_mesh.vert_count);
 		glBindVertexArray(0);
-		glUseProgram(0);
+		glUseProgram(0);*/
 
 		gui_begin(gui_state);
 		gui_draw_window_info(gui_state, 1.0f/dt);

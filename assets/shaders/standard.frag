@@ -38,9 +38,9 @@ void main()
 {
 	o = Ka;
 
-	for(int lidx = 0; lidx < 1; lidx++)
+	for(int lidx = 0; lidx < 2; lidx++)
 	{
-		if(shadowing(i.pos_light) < 1)
+		if(shadowing(i.pos_light) < 1 || lights[lidx].w > 0)
 		{
 			vec4 light = lights[lidx];
 			vec4 light_vec = light - i.pos_world * light.w;

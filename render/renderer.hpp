@@ -111,7 +111,7 @@ bool set_int_uniform(shader_t* shader, std::string name, int value)
 	return false;
 }
 
-void render(camera_t& camera, renderer_t& renderer, transform_t& transform, glm::vec4* lights, glm::mat4 L, GLuint shadow_map)
+void render(camera_t& camera, renderer_t& renderer, transform_t& transform, glm::vec4* lights, glm::mat4 L)
 {
 	glUseProgram(renderer.shader->prog_id);
 	glBindVertexArray(renderer.mesh->vao_id);
@@ -120,7 +120,6 @@ void render(camera_t& camera, renderer_t& renderer, transform_t& transform, glm:
 	set_mat4_uniform(renderer.shader, "V", camera.make_view());
 	set_mat4_uniform(renderer.shader, "P", camera.proj);
 	set_mat4_uniform(renderer.shader, "P_inv", camera.proj_inv);
-	set_mat4_uniform(renderer.shader, "L", L);
 
 	set_vec4_uniform(renderer.shader, "Ka", glm::vec4(renderer.material->Ka, 1));
 	set_vec4_uniform(renderer.shader, "Kd", glm::vec4(renderer.material->Kd, 1));
@@ -139,7 +138,7 @@ void render(camera_t& camera, renderer_t& renderer, transform_t& transform, glm:
 
 	GLint lights_loc = glGetUniformLocation(renderer.shader->prog_id, "lights");
 	glProgramUniform4fv(renderer.shader->prog_id, lights_loc, 2, glm::value_ptr(*lights));
-	set_tex2_uniform(renderer.shader, "shadow_map", 4, shadow_map);
+	set_mat4_uniform(renderer.shader, "L", L);
 		
 	glDrawArrays(renderer.mesh->mode, 0, renderer.mesh->vert_count);
 	glBindVertexArray(0);

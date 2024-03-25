@@ -7,6 +7,7 @@ layout(location = 2) in vec3 norm;
 uniform mat4 M;
 uniform mat4 V;
 uniform mat4 P;
+
 uniform mat4 L;
 
 out vert_out

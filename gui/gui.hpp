@@ -16,6 +16,7 @@ struct gui_state_t
 	window_t* window;
 	scene_t* scene;
 	asset_bank_t* asset_bank;	
+	camera_t* camera;
 };
 
 void gui_begin(gui_state_t& state)
@@ -111,5 +112,13 @@ void gui_draw_scene_info(gui_state_t& state)
 		}
 		ImGui::TreePop();
 	}
+	ImGui::PopID();
+}
+
+void gui_draw_camera(gui_state_t& state)
+{
+	ImGui::PushID("gui_draw_camera");
+	ImGui::Text("---[ Camera ]---");
+	gui_draw_transform(state, state.camera->transform);
 	ImGui::PopID();
 }
